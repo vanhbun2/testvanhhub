@@ -9,7 +9,7 @@ local SETTINGS = {
     DefaultJump = 50,
     DefaultAttackDelay = 0.1,
     FruitCheckDistance = 5000,
-    FarmHeight = 4.5, -- Độ cao bay lên trên đầu NPC
+    FarmHeight = 4.5, 
 }
 
 local state = {
@@ -25,10 +25,6 @@ local state = {
 
 local connections = {}
 local statusLabel
-
---========================================================--
--- HELPERS
---========================================================--
 local function character()
     return player.Character
 end
@@ -60,15 +56,11 @@ end
 local function getFolder(name)
     return Workspace:FindFirstChild(name)
 end
-
--- Tự động cầm vũ khí
 local function equipWeapon()
     local c = character()
     if not c then return end
-    
     local backpack = player:FindFirstChildOfClass("Backpack")
     if not backpack then return end
-
     for _, tool in ipairs(c:GetChildren()) do
         if tool:IsA("Tool") then
             if tool.Name:lower():find(state.weapon:lower()) or (state.weapon == "Melee" and (tool.Name:lower():find("combat") or tool.Name:lower():find("melee") or tool.Name:lower():find("fist"))) then
@@ -76,7 +68,6 @@ local function equipWeapon()
             end
         end
     end
-
     for _, tool in ipairs(backpack:GetChildren()) do
         if tool:IsA("Tool") then
             if tool.Name:lower():find(state.weapon:lower()) or (state.weapon == "Melee" and (tool.Name:lower():find("combat") or tool.Name:lower():find("melee") or tool.Name:lower():find("fist"))) then
@@ -87,7 +78,6 @@ local function equipWeapon()
     end
 end
 
--- Tấn công và mở rộng phạm vi trúng đòn (Hitbox mở rộng)
 local function attackTarget()
     local c = character()
     if not c then return end
@@ -102,27 +92,19 @@ local function attackTarget()
         end
     end
 end
-
--- Phóng to Hitbox của quái xung quanh để kiếm/võ đánh đâu trúng đó không bao giờ trượt
 local function expandNPC()
     local folder = getFolder("TestNPCs") or getFolder("Enemies") or getFolder("Mobs")
     if not folder then return end
-    
     for _, npc in ipairs(folder:GetChildren()) do
         local nr = npc:FindFirstChild("HumanoidRootPart")
         local nh = npc:FindFirstChildOfClass("Humanoid")
         if nr and nh and nh.Health > 0 then
-            -- Phóng to phần thân quái lên để tăng vùng chạm hitbox
             nr.Size = Vector3.new(6, 6, 6)
-            nr.Transparency = 0.7 -- Làm mờ nhẹ phần hitbox mở rộng hoặc để 1 nếu muốn tàng hình (0.7 để dễ nhìn)
+            nr.Transparency = 0.7 hình (0.7 để dễ nhìn)
             nr.CanCollide = false
         end
     end
 end
-
---========================================================--
--- GUI CREATION
---========================================================--
 local gui = Instance.new("ScreenGui")
 gui.Name = "VanhHubGodEdition"
 gui.ResetOnSpawn = false
@@ -236,7 +218,6 @@ local function button(text)
     b.TextSize = 14
     b.Font = Enum.Font.GothamMedium
     b.Parent = scroll
-
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, 8)
     c.Parent = b
@@ -248,11 +229,9 @@ local function inputRow(title, value)
     holder.Size = UDim2.new(1, -4, 0, 42)
     holder.BackgroundColor3 = Color3.fromRGB(34, 34, 40)
     holder.Parent = scroll
-
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, 8)
     c.Parent = holder
-
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.58, 0, 1, 0)
     label.BackgroundTransparency = 1
@@ -262,7 +241,6 @@ local function inputRow(title, value)
     label.Font = Enum.Font.GothamMedium
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = holder
-
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(0.34, 0, 0, 30)
     box.Position = UDim2.new(0.64, 0, 0.5, -15)
@@ -274,17 +252,11 @@ local function inputRow(title, value)
     box.TextSize = 13
     box.Font = Enum.Font.Gotham
     box.Parent = holder
-
     local bc = Instance.new("UICorner")
     bc.CornerRadius = UDim.new(0, 6)
     bc.Parent = box
-
     return box
 end
-
---========================================================--
--- FARM MODULE (BAY LÊN ĐẦU NPC + MỞ RỘNG HITBOX)
---========================================================--
 section("📌 Farm Features")
 
 local chooseButton = button("⚔️ Weapon: Melee")
@@ -304,12 +276,10 @@ local function nearestNPC()
     local r = root()
     local folder = getFolder("TestNPCs") or getFolder("Enemies") or getFolder("Mobs")
     if not r or not folder then return nil end
-
     local best, bestDistance
     for _, npc in ipairs(folder:GetChildren()) do
         local nr = npc:FindFirstChild("HumanoidRootPart")
         local nh = npc:FindFirstChildOfClass("Humanoid")
-
         if nr and nh and nh.Health > 0 then
             local d = (nr.Position - r.Position).Magnitude
             if not bestDistance or d < bestDistance then
@@ -327,27 +297,20 @@ farmButton.MouseButton1Click:Connect(function()
     setStatus(state.autoFarm and "Auto Farm ON" or "Auto Farm OFF")
 end)
 
--- Vòng lặp Auto Farm: Bay lơ lửng trên đỉnh đầu NPC + Phóng to hitbox liên tục
 task.spawn(function()
     while gui.Parent do
         task.wait(state.attackDelay)
-
         if state.autoFarm then
             pcall(function()
                 local r = root()
                 local npc = nearestNPC()
-
                 if r and npc then
                     local nr = npc:FindFirstChild("HumanoidRootPart")
                     local nh = npc:FindFirstChildOfClass("Humanoid")
-
                     if nr and nh and nh.Health > 0 then
                         equipWeapon()
                         expandNPC() -- Tự động mở rộng hitbox quái liên tục
-                        
-                        -- Bay lên đỉnh đầu NPC (Couch chúc xuống dưới để chém trúng đầu quái)
                         r.CFrame = nr.CFrame * CFrame.new(0, SETTINGS.FarmHeight, 0) * CFrame.Angles(math.rad(90), 0, 0)
-                        
                         attackTarget()
                         setStatus("Farming from above: " .. npc.Name .. " [HP: " .. math.floor(nh.Health) .. "]")
                     end
@@ -365,7 +328,6 @@ local function nearestFruit()
     local r = root()
     local folder = getFolder("Fruits")
     if not r or not folder then return nil end
-
     local best, bestDistance
     for _, fruit in ipairs(folder:GetChildren()) do
         local part = fruit:IsA("BasePart") and fruit or fruit:FindFirstChildWhichIsA("BasePart", true)
@@ -403,10 +365,6 @@ task.spawn(function()
         end
     end
 end)
-
---========================================================--
--- SETTINGS MODULE (FIXED ULTIMATE SPEED)
---========================================================--
 section("⚙️ Character Settings")
 
 local speedBox = inputRow("WalkSpeed", SETTINGS.DefaultSpeed)
@@ -418,7 +376,6 @@ applyButton.MouseButton1Click:Connect(function()
     state.speed = math.clamp(getNumber(speedBox, SETTINGS.DefaultSpeed), 0, 300)
     state.jump = math.clamp(getNumber(jumpBox, SETTINGS.DefaultJump), 0, 300)
     state.attackDelay = math.clamp(getNumber(attackBox, SETTINGS.DefaultAttackDelay), 0.05, 5)
-
     local h = humanoid()
     if h then
         h.WalkSpeed = state.speed
@@ -445,10 +402,6 @@ RunService.Heartbeat:Connect(function()
         r.AssemblyLinearVelocity = Vector3.new(h.MoveDirection.X * state.speed, currentVelocity.Y, h.MoveDirection.Z * state.speed)
     end
 end)
-
---========================================================--
--- PERFORMANCE & EXTRAS
---========================================================--
 section("🚀 Performance & Utilities")
 
 local fpsLabel = button("FPS: --")
@@ -479,13 +432,11 @@ local effectsDisabled = false
 fixLagButton.MouseButton1Click:Connect(function()
     effectsDisabled = not effectsDisabled
     fixLagButton.Text = "🧹 Fix Lag: " .. (effectsDisabled and "ON" or "OFF")
-
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
             obj.Enabled = not effectsDisabled
         end
     end
-    
     local statusText = "Effects restored"
     if effectsDisabled then
         statusText = "Effects optimized"
@@ -504,10 +455,6 @@ connections.fps = RunService.RenderStepped:Connect(function()
         last = now
     end
 end)
-
---========================================================--
--- GUI DRAGGING & TOGGLE
---========================================================--
 local function setOpen(value)
     state.open = value
     main.Visible = value
@@ -550,4 +497,5 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-setStatus("VanhHub God Edition loaded successfully!")
+setStatus("VanhHub God Edition loaded successfully!")	
+
