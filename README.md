@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
@@ -10,6 +11,7 @@ local SETTINGS = {
     DefaultAttackDelay = 0.1,
     FruitCheckDistance = 5000,
     FarmHeight = 4.5,
+    FlySpeed = 120, -- Tốc độ bay mượt
 }
 
 local state = {
@@ -45,12 +47,19 @@ local function setStatus(text)
     end
 end
 
-local function getNumber(textBox, fallback)
-    local n = tonumber(textBox.Text)
-    if n == nil then
-        return fallback
-    end
-    return n
+local function smoothMoveTo(targetCFrame, speed)
+    local r = root()
+    if not r then return end
+    local distance = (r.Position - targetCFrame.Position).Magnitude
+    local timeToTravel = distance / (speed or SETTINGS.FlySpeed)
+    local tweenInfo = TweenInfo.new(
+        timeToTravel,
+        Enum.EasingStyle.Linear,
+        Enum.EasingDirection.Out
+    )
+    local tween = TweenService:Create(r, tweenInfo, {CFrame = targetCFrame})
+    tween:Play()
+    return tween
 end
 
 local function getFolder(name)
@@ -145,7 +154,7 @@ local header = Instance.new("TextLabel")
 header.Size = UDim2.new(1, -30, 0, 55)
 header.Position = UDim2.fromOffset(15, 8)
 header.BackgroundTransparency = 1
-header.Text = "Vanh Hub - Final Edition"
+header.Text = "Vanh Hub - Enhanced Edition"
 header.TextColor3 = Color3.fromRGB(245, 245, 245)
 header.TextSize = 24
 header.Font = Enum.Font.GothamBold
@@ -195,10 +204,6 @@ layout.Padding = UDim.new(0, 8)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = scroll
 
-local padding = Instance.new("UIPadding")
-padding.PaddingBottom = UDim.new(0, 12)
-padding.Parent = scroll
-
 local function section(text)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -4, 0, 35)
@@ -227,49 +232,11 @@ local function button(text)
     return b
 end
 
-local function inputRow(title, value)
-    local holder = Instance.new("Frame")
-    holder.Size = UDim2.new(1, -4, 0, 42)
-    holder.BackgroundColor3 = Color3.fromRGB(34, 34, 40)
-    holder.Parent = scroll
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 8)
-    c.Parent = holder
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.58, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = title
-    label.TextColor3 = Color3.fromRGB(235, 235, 235)
-    label.TextSize = 14
-    label.Font = Enum.Font.GothamMedium
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = holder
-    local box = Instance.new("TextBox")
-    box.Size = UDim2.new(0.34, 0, 0, 30)
-    box.Position = UDim2.new(0.64, 0, 0.5, -15)
-    box.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    box.TextColor3 = Color3.fromRGB(255, 255, 255)
-    box.PlaceholderColor3 = Color3.fromRGB(120, 120, 125)
-    box.Text = tostring(value)
-    box.ClearTextOnFocus = false
-    box.TextSize = 13
-    box.Font = Enum.Font.Gotham
-    box.Parent = holder
-    local bc = Instance.new("UICorner")
-    bc.CornerRadius = UDim.new(0, 6)
-    bc.Parent = box
-    return box
-end
-
 section("📌 Farm Features")
 
 local chooseButton = button("⚔️ Weapon: Melee")
 chooseButton.MouseButton1Click:Connect(function()
-    if state.weapon == "Melee" then
-        state.weapon = "Sword"
-    else
-        state.weapon = "Melee"
-    end
+    state.weapon = (state.weapon == "Melee") and "Sword" or "Melee"
     chooseButton.Text = "⚔️ Weapon: " .. state.weapon
     setStatus("Weapon set to " .. state.weapon)
 end)
@@ -301,6 +268,7 @@ farmButton.MouseButton1Click:Connect(function()
     setStatus(state.autoFarm and "Auto Farm ON" or "Auto Farm OFF")
 end)
 
+-- Vòng lặp Auto Farm mượt hơn
 task.spawn(function()
     while gui.Parent do
         task.wait(state.attackDelay)
@@ -314,9 +282,10 @@ task.spawn(function()
                     if nr and nh and nh.Health > 0 then
                         equipWeapon()
                         expandNPC()
-                        r.CFrame = nr.CFrame * CFrame.new(0, SETTINGS.FarmHeight, 0) * CFrame.Angles(math.rad(90), 0, 0)
+                        local targetCFrame = nr.CFrame * CFrame.new(0, SETTINGS.FarmHeight, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+                        smoothMoveTo(targetCFrame, SETTINGS.FlySpeed)
                         attackTarget()
-                        setStatus("Farming from above: " .. npc.Name .. " [HP: " .. math.floor(nh.Health) .. "]")
+                        setStatus("Farming: " .. npc.Name .. " [HP: " .. math.floor(nh.Health) .. "]")
                     end
                 else
                     setStatus("Searching for targets...")
@@ -345,7 +314,6 @@ local function nearestFruit()
     end
     return best
 end
-
 fruitButton.MouseButton1Click:Connect(function()
     state.teleFruit = not state.teleFruit
     fruitButton.Text = "🍎 Tele To Fruit: " .. (state.teleFruit and "ON" or "OFF")
@@ -360,8 +328,11 @@ task.spawn(function()
                 local r = root()
                 local fruit = nearestFruit()
                 if r and fruit then
-                    r.CFrame = fruit.CFrame + Vector3.new(0, 3, 0)
-                    setStatus("Teleported to fruit!")
+                    setStatus("Flying to fruit...")
+                    local targetCFrame = fruit.CFrame + Vector3.new(0, 3, 0)
+                    local tween = smoothMoveTo(targetCFrame, 150)
+                    if tween then tween.Completed:Wait() end
+                    setStatus("Reached fruit!")
                     state.teleFruit = false
                     fruitButton.Text = "🍎 Tele To Fruit: OFF"
                 end
@@ -370,52 +341,12 @@ task.spawn(function()
     end
 end)
 
-section("⚙️ Character Settings")
+section("🚀 Utilities")
 
-local speedBox = inputRow("WalkSpeed", SETTINGS.DefaultSpeed)
-local jumpBox = inputRow("JumpPower", SETTINGS.DefaultJump)
-local attackBox = inputRow("Attack Delay", SETTINGS.DefaultAttackDelay)
-
-local applyButton = button("✓ Apply Settings")
-applyButton.MouseButton1Click:Connect(function()
-    state.speed = math.clamp(getNumber(speedBox, SETTINGS.DefaultSpeed), 0, 300)
-    state.jump = math.clamp(getNumber(jumpBox, SETTINGS.DefaultJump), 0, 300)
-    state.attackDelay = math.clamp(getNumber(attackBox, SETTINGS.DefaultAttackDelay), 0.05, 5)
-    local h = humanoid()
-    if h then
-        h.WalkSpeed = state.speed
-        if h.UseJumpPower then
-            h.JumpPower = state.jump
-        else
-            h.JumpHeight = math.clamp(state.jump / 7, 0, 50)
-        end
-    end
-    setStatus("Settings applied successfully!")
-end)
-
-RunService.Heartbeat:Connect(function()
-    local h = humanoid()
-    local r = root()
-    if h then
-        if h.WalkSpeed ~= state.speed then
-            h.WalkSpeed = state.speed
-        end
-    end
-    if r and h and h.MoveDirection.Magnitude > 0 and state.speed > 16 then
-        local currentVelocity = r.AssemblyLinearVelocity
-        r.AssemblyLinearVelocity = Vector3.new(h.MoveDirection.X * state.speed, currentVelocity.Y, h.MoveDirection.Z * state.speed)
-    end
-end)
-
-section("🚀 Performance & Utilities")
-
-local fpsLabel = button("FPS: --")
-fpsLabel.Active = false
-
-local noclipButton = button("👻 Noclip (Xuyên tường): OFF")
+local noclipButton = button("👻 Noclip: OFF")
 noclipButton.MouseButton1Click:Connect(function()
     state.noclip = not state.noclip
-    noclipButton.Text = "👻 Noclip (Xuyên tường): " .. (state.noclip and "ON" or "OFF")
+    noclipButton.Text = "👻 Noclip: " .. (state.noclip and "ON" or "OFF")
     setStatus(state.noclip and "Noclip Enabled" or "Noclip Disabled")
 end)
 
@@ -432,75 +363,12 @@ RunService.Stepped:Connect(function()
     end
 end)
 
-local fixLagButton = button("🧹 Fix Lag / Low Graphics: OFF")
-local effectsDisabled = false
-fixLagButton.MouseButton1Click:Connect(function()
-    effectsDisabled = not effectsDisabled
-    fixLagButton.Text = "🧹 Fix Lag: " .. (effectsDisabled and "ON" or "OFF")
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
-            obj.Enabled = not effectsDisabled
-        end
-    end
-    local statusText = "Effects restored"
-    if effectsDisabled then
-        statusText = "Effects optimized"
-    end
-    setStatus(statusText)
-end)
-
-local frames = 0
-local last = os.clock()
-RunService.RenderStepped:Connect(function()
-    frames += 1
-    local now = os.clock()
-    if now - last >= 1 then
-        fpsLabel.Text = "FPS: " .. frames
-        frames = 0
-        last = now
-    end
-end)
-
 local function setOpen(value)
     state.open = value
     main.Visible = value
 end
 
-toggle.MouseButton1Click:Connect(function()
-    setOpen(not state.open)
-end)
+toggle.MouseButton1Click:Connect(function() setOpen(not state.open) end)
+close.MouseButton1Click:Connect(function() setOpen(false) end)
 
-close.MouseButton1Click:Connect(function()
-    setOpen(false)
-end)
-
-local dragging = false
-local dragStart, startPos
-
-header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = main.Position
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
-setStatus("VanhHub Final loaded successfully!")
+setStatus("VanhHub Enhanced loaded successfully!")
