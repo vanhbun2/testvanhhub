@@ -9,7 +9,7 @@ local SETTINGS = {
     DefaultJump = 50,
     DefaultAttackDelay = 0.1,
     FruitCheckDistance = 5000,
-    FarmHeight = 4.5, 
+    FarmHeight = 4.5,
 }
 
 local state = {
@@ -23,8 +23,8 @@ local state = {
     attackDelay = SETTINGS.DefaultAttackDelay,
 }
 
-local connections = {}
 local statusLabel
+
 local function character()
     return player.Character
 end
@@ -56,6 +56,7 @@ end
 local function getFolder(name)
     return Workspace:FindFirstChild(name)
 end
+
 local function equipWeapon()
     local c = character()
     if not c then return end
@@ -92,6 +93,7 @@ local function attackTarget()
         end
     end
 end
+
 local function expandNPC()
     local folder = getFolder("TestNPCs") or getFolder("Enemies") or getFolder("Mobs")
     if not folder then return end
@@ -100,13 +102,14 @@ local function expandNPC()
         local nh = npc:FindFirstChildOfClass("Humanoid")
         if nr and nh and nh.Health > 0 then
             nr.Size = Vector3.new(6, 6, 6)
-            nr.Transparency = 0.7 hình (0.7 để dễ nhìn)
+            nr.Transparency = 0.7
             nr.CanCollide = false
         end
     end
 end
+
 local gui = Instance.new("ScreenGui")
-gui.Name = "VanhHubGodEdition"
+gui.Name = "VanhHubFinal"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
@@ -142,7 +145,7 @@ local header = Instance.new("TextLabel")
 header.Size = UDim2.new(1, -30, 0, 55)
 header.Position = UDim2.fromOffset(15, 8)
 header.BackgroundTransparency = 1
-header.Text = "Vanh Hub - God Edition"
+header.Text = "Vanh Hub - Final Edition"
 header.TextColor3 = Color3.fromRGB(245, 245, 245)
 header.TextSize = 24
 header.Font = Enum.Font.GothamBold
@@ -257,6 +260,7 @@ local function inputRow(title, value)
     bc.Parent = box
     return box
 end
+
 section("📌 Farm Features")
 
 local chooseButton = button("⚔️ Weapon: Melee")
@@ -309,7 +313,7 @@ task.spawn(function()
                     local nh = npc:FindFirstChildOfClass("Humanoid")
                     if nr and nh and nh.Health > 0 then
                         equipWeapon()
-                        expandNPC() -- Tự động mở rộng hitbox quái liên tục
+                        expandNPC()
                         r.CFrame = nr.CFrame * CFrame.new(0, SETTINGS.FarmHeight, 0) * CFrame.Angles(math.rad(90), 0, 0)
                         attackTarget()
                         setStatus("Farming from above: " .. npc.Name .. " [HP: " .. math.floor(nh.Health) .. "]")
@@ -365,6 +369,7 @@ task.spawn(function()
         end
     end
 end)
+
 section("⚙️ Character Settings")
 
 local speedBox = inputRow("WalkSpeed", SETTINGS.DefaultSpeed)
@@ -388,7 +393,6 @@ applyButton.MouseButton1Click:Connect(function()
     setStatus("Settings applied successfully!")
 end)
 
--- Khóa cứng tốc độ chạy hoàn toàn
 RunService.Heartbeat:Connect(function()
     local h = humanoid()
     local r = root()
@@ -402,6 +406,7 @@ RunService.Heartbeat:Connect(function()
         r.AssemblyLinearVelocity = Vector3.new(h.MoveDirection.X * state.speed, currentVelocity.Y, h.MoveDirection.Z * state.speed)
     end
 end)
+
 section("🚀 Performance & Utilities")
 
 local fpsLabel = button("FPS: --")
@@ -446,7 +451,7 @@ end)
 
 local frames = 0
 local last = os.clock()
-connections.fps = RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function()
     frames += 1
     local now = os.clock()
     if now - last >= 1 then
@@ -455,6 +460,7 @@ connections.fps = RunService.RenderStepped:Connect(function()
         last = now
     end
 end)
+
 local function setOpen(value)
     state.open = value
     main.Visible = value
@@ -497,5 +503,4 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-setStatus("VanhHub God Edition loaded successfully!")	
-
+setStatus("VanhHub Final loaded successfully!")
