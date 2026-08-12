@@ -1,34 +1,34 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
+local VirtualUser = game:GetService("VirtualUser")
+
 local player = Players.LocalPlayer
+
 
 local SETTINGS = {
     DefaultSpeed = 16,
     DefaultJump = 50,
-    DefaultAttackDelay = 0.1,
-    FruitCheckDistance = 5000,
-    FarmHeight = 4.5,
-    FlySpeed = 120, -- Tốc độ bay mượt
+    DefaultAttackDelay = 0.05,
+    FarmHeight = 5,
+    FlySpeed = 250,
 }
 
 local state = {
     open = true,
     autoFarm = false,
-    teleFruit = false,
     noclip = false,
+    hitboxExpand = true,
     weapon = "Melee",
-    speed = SETTINGS.DefaultSpeed,
-    jump = SETTINGS.DefaultJump,
     attackDelay = SETTINGS.DefaultAttackDelay,
 }
 
 local statusLabel
+local activeTween = nil
 
 local function character()
-    return player.Character
+    return player.Character or player.CharacterAdded:Wait()
 end
 
 local function humanoid()
@@ -42,207 +42,84 @@ local function root()
 end
 
 local function setStatus(text)
-    if statusLabel then
+    if statusLabel and statusLabel.Parent then
         statusLabel.Text = "Status: " .. text
     end
 end
 
+-- Tối ưu di chuyển mượt
 local function smoothMoveTo(targetCFrame, speed)
     local r = root()
     if not r then return end
     local distance = (r.Position - targetCFrame.Position).Magnitude
+    if distance < 2 then return end
     local timeToTravel = distance / (speed or SETTINGS.FlySpeed)
     local tweenInfo = TweenInfo.new(
         timeToTravel,
         Enum.EasingStyle.Linear,
         Enum.EasingDirection.Out
     )
-    local tween = TweenService:Create(r, tweenInfo, {CFrame = targetCFrame})
-    tween:Play()
-    return tween
+    if activeTween then activeTween:Cancel() end
+    activeTween = TweenService:Create(r, tweenInfo, {CFrame = targetCFrame})
+    activeTween:Play()
+    return activeTween
 end
 
 local function getFolder(name)
     return Workspace:FindFirstChild(name)
 end
 
+-- Trang bị vũ khí
 local function equipWeapon()
     local c = character()
-    if not c then return end
-    local backpack = player:FindFirstChildOfClass("Backpack")
-    if not backpack then return end
+    local h = humanoid()
+    if not c or not h then return end
     for _, tool in ipairs(c:GetChildren()) do
         if tool:IsA("Tool") then
-            if tool.Name:lower():find(state.weapon:lower()) or (state.weapon == "Melee" and (tool.Name:lower():find("combat") or tool.Name:lower():find("melee") or tool.Name:lower():find("fist"))) then
-                return
-            end
+            return
         end
     end
+    local backpack = player:FindFirstChildOfClass("Backpack")
+    if not backpack then return end
     for _, tool in ipairs(backpack:GetChildren()) do
         if tool:IsA("Tool") then
-            if tool.Name:lower():find(state.weapon:lower()) or (state.weapon == "Melee" and (tool.Name:lower():find("combat") or tool.Name:lower():find("melee") or tool.Name:lower():find("fist"))) then
-                humanoid():EquipTool(tool)
+            local name = tool.Name:lower()
+            local target = state.weapon:lower()
+            if name:find(target) or (target == "melee" and (name:find("combat") or name:find("fist"))) then
+                h:EquipTool(tool)
                 break
             end
         end
     end
 end
 
+-- Đánh tự động
 local function attackTarget()
     local c = character()
     if not c then return end
-    for _, tool in ipairs(c:GetChildren()) do
-        if tool:IsA("Tool") then
-            pcall(function()
+    pcall(function()
+        VirtualUser:Button1Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        VirtualUser:Button1Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        for _, tool in ipairs(c:GetChildren()) do
+            if tool:IsA("Tool") then
                 tool:Activate()
-                local vim = game:GetService("VirtualUser")
-                vim:Button1Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-                vim:Button1Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            end)
+            end
         end
+    end)
+end
+
+-- Mở rộng Hitbox NPC
+local function expandNPC(npc)
+    if not state.hitboxExpand or not npc then return end
+    local nr = npc:FindFirstChild("HumanoidRootPart")
+    if nr then
+        nr.Size = Vector3.new(12, 12, 12)
+        nr.Transparency = 0.8
+        nr.CanCollide = false
     end
 end
 
-local function expandNPC()
-    local folder = getFolder("TestNPCs") or getFolder("Enemies") or getFolder("Mobs")
-    if not folder then return end
-    for _, npc in ipairs(folder:GetChildren()) do
-        local nr = npc:FindFirstChild("HumanoidRootPart")
-        local nh = npc:FindFirstChildOfClass("Humanoid")
-        if nr and nh and nh.Health > 0 then
-            nr.Size = Vector3.new(6, 6, 6)
-            nr.Transparency = 0.7
-            nr.CanCollide = false
-        end
-    end
-end
-
-local gui = Instance.new("ScreenGui")
-gui.Name = "VanhHubFinal"
-gui.ResetOnSpawn = false
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Parent = player:WaitForChild("PlayerGui")
-
-local toggle = Instance.new("TextButton")
-toggle.Name = "VanhToggle"
-toggle.Size = UDim2.fromOffset(86, 42)
-toggle.Position = UDim2.new(0, 20, 0.5, -21)
-toggle.BackgroundColor3 = Color3.fromRGB(30, 30, 34)
-toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggle.Text = "⚡ VANH"
-toggle.TextSize = 15
-toggle.Font = Enum.Font.GothamBold
-toggle.Parent = gui
-
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(0, 9)
-toggleCorner.Parent = toggle
-
-local main = Instance.new("Frame")
-main.Name = "Main"
-main.Size = UDim2.fromOffset(500, 540)
-main.Position = UDim2.new(0.5, -250, 0.5, -270)
-main.BackgroundColor3 = Color3.fromRGB(24, 24, 27)
-main.BorderSizePixel = 0
-main.Parent = gui
-
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 12)
-mainCorner.Parent = main
-
-local header = Instance.new("TextLabel")
-header.Size = UDim2.new(1, -30, 0, 55)
-header.Position = UDim2.fromOffset(15, 8)
-header.BackgroundTransparency = 1
-header.Text = "Vanh Hub - Enhanced Edition"
-header.TextColor3 = Color3.fromRGB(245, 245, 245)
-header.TextSize = 24
-header.Font = Enum.Font.GothamBold
-header.TextXAlignment = Enum.TextXAlignment.Left
-header.Parent = main
-
-local close = Instance.new("TextButton")
-close.Size = UDim2.fromOffset(34, 34)
-close.Position = UDim2.new(1, -45, 0, 14)
-close.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-close.Text = "×"
-close.TextColor3 = Color3.fromRGB(255, 255, 255)
-close.TextSize = 22
-close.Font = Enum.Font.GothamBold
-close.Parent = main
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
-closeCorner.Parent = close
-
-statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -30, 0, 30)
-statusLabel.Position = UDim2.fromOffset(15, 63)
-statusLabel.BackgroundColor3 = Color3.fromRGB(31, 31, 36)
-statusLabel.Text = "Status: Ready"
-statusLabel.TextColor3 = Color3.fromRGB(160, 255, 180)
-statusLabel.TextSize = 13
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.Parent = main
-
-local statusCorner = Instance.new("UICorner")
-statusCorner.CornerRadius = UDim.new(0, 7)
-statusCorner.Parent = statusLabel
-
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -30, 1, -110)
-scroll.Position = UDim2.fromOffset(15, 102)
-scroll.BackgroundTransparency = 1
-scroll.BorderSizePixel = 0
-scroll.ScrollBarThickness = 5
-scroll.CanvasSize = UDim2.new()
-scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-scroll.Parent = main
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 8)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Parent = scroll
-
-local function section(text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -4, 0, 35)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = Color3.fromRGB(235, 235, 235)
-    label.TextSize = 18
-    label.Font = Enum.Font.GothamBold
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = scroll
-    return label
-end
-
-local function button(text)
-    local b = Instance.new("TextButton")
-    b.Size = UDim2.new(1, -4, 0, 40)
-    b.BackgroundColor3 = Color3.fromRGB(34, 34, 40)
-    b.TextColor3 = Color3.fromRGB(245, 245, 245)
-    b.Text = text
-    b.TextSize = 14
-    b.Font = Enum.Font.GothamMedium
-    b.Parent = scroll
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 8)
-    c.Parent = b
-    return b
-end
-
-section("📌 Farm Features")
-
-local chooseButton = button("⚔️ Weapon: Melee")
-chooseButton.MouseButton1Click:Connect(function()
-    state.weapon = (state.weapon == "Melee") and "Sword" or "Melee"
-    chooseButton.Text = "⚔️ Weapon: " .. state.weapon
-    setStatus("Weapon set to " .. state.weapon)
-end)
-
-local farmButton = button("🤖 Auto Farm: OFF")
-
+-- Tìm NPC gần nhất
 local function nearestNPC()
     local r = root()
     local folder = getFolder("TestNPCs") or getFolder("Enemies") or getFolder("Mobs")
@@ -262,13 +139,138 @@ local function nearestNPC()
     return best
 end
 
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "VanhHubPro"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local toggle = Instance.new("TextButton")
+toggle.Name = "VanhToggle"
+toggle.Size = UDim2.fromOffset(90, 42)
+toggle.Position = UDim2.new(0, 20, 0.5, -21)
+toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+toggle.TextColor3 = Color3.fromRGB(0, 255, 170)
+toggle.Text = "⚡ VANH PRO"
+toggle.TextSize = 14
+toggle.Font = Enum.Font.GothamBold
+toggle.Parent = gui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 8)
+toggleCorner.Parent = toggle
+
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.fromOffset(480, 420)
+main.Position = UDim2.new(0.5, -240, 0.5, -210)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+main.BorderSizePixel = 0
+main.Parent = gui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = main
+
+local header = Instance.new("TextLabel")
+header.Size = UDim2.new(1, -30, 0, 50)
+header.Position = UDim2.fromOffset(15, 5)
+header.BackgroundTransparency = 1
+header.Text = "Vanh Hub — Ultra Edition"
+header.TextColor3 = Color3.fromRGB(255, 255, 255)
+header.TextSize = 20
+header.Font = Enum.Font.GothamBold
+header.TextXAlignment = Enum.TextXAlignment.Left
+header.Parent = main
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(30, 30)
+close.Position = UDim2.new(1, -40, 0, 12)
+close.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+close.Text = "×"
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
+close.TextSize = 20
+close.Font = Enum.Font.GothamBold
+close.Parent = main
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = close
+
+statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -30, 0, 28)
+statusLabel.Position = UDim2.fromOffset(15, 55)
+statusLabel.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+statusLabel.Text = "Status: Ready"
+statusLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+statusLabel.TextSize = 12
+statusLabel.Font = Enum.Font.GothamMedium
+statusLabel.Parent = main
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 6)
+statusCorner.Parent = statusLabel
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -30, 1, -100)
+scroll.Position = UDim2.fromOffset(15, 90)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 4
+scroll.CanvasSize = UDim2.new()
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.Parent = main
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 8)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = scroll
+
+local function button(text)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -4, 0, 38)
+    b.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
+    b.TextColor3 = Color3.fromRGB(240, 240, 240)
+    b.Text = text
+    b.TextSize = 13
+    b.Font = Enum.Font.GothamMedium
+    b.Parent = scroll
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 6)
+    c.Parent = b
+    return b
+end
+
+-- Nút điều khiển
+local chooseButton = button("⚔️ Weapon: Melee")
+chooseButton.MouseButton1Click:Connect(function()
+    state.weapon = (state.weapon == "Melee") and "Sword" or "Melee"
+    chooseButton.Text = "⚔️ Weapon: " .. state.weapon
+    setStatus("Weapon set to " .. state.weapon)
+end)
+
+local farmButton = button("🤖 Auto Farm: OFF")
 farmButton.MouseButton1Click:Connect(function()
     state.autoFarm = not state.autoFarm
     farmButton.Text = "🤖 Auto Farm: " .. (state.autoFarm and "ON" or "OFF")
-    setStatus(state.autoFarm and "Auto Farm ON" or "Auto Farm OFF")
+    setStatus(state.autoFarm and "Auto Farm Enabled" or "Auto Farm Disabled")
 end)
 
--- Vòng lặp Auto Farm mượt hơn
+local hitboxButton = button("🎯 Expand Hitbox: ON")
+hitboxButton.MouseButton1Click:Connect(function()
+    state.hitboxExpand = not state.hitboxExpand
+    hitboxButton.Text = "🎯 Expand Hitbox: " .. (state.hitboxExpand and "ON" or "OFF")
+end)
+
+local noclipButton = button("👻 Noclip: OFF")
+noclipButton.MouseButton1Click:Connect(function()
+    state.noclip = not state.noclip
+    noclipButton.Text = "👻 Noclip: " .. (state.noclip and "ON" or "OFF")
+    setStatus(state.noclip and "Noclip Enabled" or "Noclip Disabled")
+end)
+
+-- Vòng lặp Auto Farm
 task.spawn(function()
     while gui.Parent do
         task.wait(state.attackDelay)
@@ -281,75 +283,21 @@ task.spawn(function()
                     local nh = npc:FindFirstChildOfClass("Humanoid")
                     if nr and nh and nh.Health > 0 then
                         equipWeapon()
-                        expandNPC()
+                        expandNPC(npc)
                         local targetCFrame = nr.CFrame * CFrame.new(0, SETTINGS.FarmHeight, 0) * CFrame.Angles(math.rad(-90), 0, 0)
                         smoothMoveTo(targetCFrame, SETTINGS.FlySpeed)
                         attackTarget()
-                        setStatus("Farming: " .. npc.Name .. " [HP: " .. math.floor(nh.Health) .. "]")
+                        setStatus("Farming: " .. npc.Name .. " [" .. math.floor(nh.Health) .. " HP]")
                     end
                 else
-                    setStatus("Searching for targets...")
+                    setStatus("Searching for NPCs...")
                 end
             end)
         end
     end
 end)
 
-local fruitButton = button("🍎 Tele To Fruit: OFF")
-
-local function nearestFruit()
-    local r = root()
-    local folder = getFolder("Fruits")
-    if not r or not folder then return nil end
-    local best, bestDistance
-    for _, fruit in ipairs(folder:GetChildren()) do
-        local part = fruit:IsA("BasePart") and fruit or fruit:FindFirstChildWhichIsA("BasePart", true)
-        if part then
-            local d = (part.Position - r.Position).Magnitude
-            if d <= SETTINGS.FruitCheckDistance and (not bestDistance or d < bestDistance) then
-                best = part
-                bestDistance = d
-            end
-        end
-    end
-    return best
-end
-fruitButton.MouseButton1Click:Connect(function()
-    state.teleFruit = not state.teleFruit
-    fruitButton.Text = "🍎 Tele To Fruit: " .. (state.teleFruit and "ON" or "OFF")
-    setStatus(state.teleFruit and "Fruit Watcher ON" or "Fruit Watcher OFF")
-end)
-
-task.spawn(function()
-    while gui.Parent do
-        task.wait(0.5)
-        if state.teleFruit then
-            pcall(function()
-                local r = root()
-                local fruit = nearestFruit()
-                if r and fruit then
-                    setStatus("Flying to fruit...")
-                    local targetCFrame = fruit.CFrame + Vector3.new(0, 3, 0)
-                    local tween = smoothMoveTo(targetCFrame, 150)
-                    if tween then tween.Completed:Wait() end
-                    setStatus("Reached fruit!")
-                    state.teleFruit = false
-                    fruitButton.Text = "🍎 Tele To Fruit: OFF"
-                end
-            end)
-        end
-    end
-end)
-
-section("🚀 Utilities")
-
-local noclipButton = button("👻 Noclip: OFF")
-noclipButton.MouseButton1Click:Connect(function()
-    state.noclip = not state.noclip
-    noclipButton.Text = "👻 Noclip: " .. (state.noclip and "ON" or "OFF")
-    setStatus(state.noclip and "Noclip Enabled" or "Noclip Disabled")
-end)
-
+-- Vòng lặp Noclip
 RunService.Stepped:Connect(function()
     if state.noclip then
         local c = character()
@@ -371,4 +319,4 @@ end
 toggle.MouseButton1Click:Connect(function() setOpen(not state.open) end)
 close.MouseButton1Click:Connect(function() setOpen(false) end)
 
-setStatus("VanhHub Enhanced loaded successfully!")
+setStatus("VanhHub Loaded!")
