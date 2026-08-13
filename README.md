@@ -1,14 +1,12 @@
 local player = game.Players.LocalPlayer
 local uis = game:GetService("UserInputService")
 local run = game:GetService("RunService")
-
 local flying = false
 local speed = 60
-
 local gui = Instance.new("ScreenGui")
 gui.Name = "FlyGui"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = player:WaitForChild("PlayerGui")		
 local open = Instance.new("TextButton")
 open.Size = UDim2.new(0, 80, 0, 40)
 open.Position = UDim2.new(0, 20, 0.5, -20)
@@ -33,15 +31,12 @@ off.Size = UDim2.new(0, 80, 0, 40)
 off.Position = UDim2.new(0, 120, 0, 55)
 off.Text = "OFF"
 off.Parent = frame
-
 open.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
 end)
-
 on.MouseButton1Click:Connect(function()
 	flying = true
 end)
-
 off.MouseButton1Click:Connect(function()
 	flying = false
 	local char = player.Character
