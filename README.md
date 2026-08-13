@@ -6,6 +6,8 @@ local flying = false
 local flySpeed = 60
 local walkSpeed = 16
 local jumpPower = 50
+local speedOn = false
+local jumpOn = false
 local connection
 
 local gui = Instance.new("ScreenGui")
@@ -28,8 +30,8 @@ openCorner.CornerRadius = UDim.new(0,10)
 openCorner.Parent = open
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,290,0,260)
-frame.Position = UDim2.new(0.5,-145,0.5,-130)
+frame.Size = UDim2.new(0,290,0,300)
+frame.Position = UDim2.new(0.5,-145,0.5,-150)
 frame.BackgroundColor3 = Color3.fromRGB(22,22,27)
 frame.Visible = false
 frame.Parent = gui
@@ -100,20 +102,50 @@ local offCorner = Instance.new("UICorner")
 offCorner.CornerRadius = UDim.new(0,9)
 offCorner.Parent = off
 
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(0,80,0,30)
-speedLabel.Position = UDim2.new(0,20,0,125)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Speed:"
-speedLabel.TextColor3 = Color3.fromRGB(220,220,220)
-speedLabel.TextSize = 15
-speedLabel.Font = Enum.Font.Gotham
-speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-speedLabel.Parent = frame
+local flySpeedBox = Instance.new("TextBox")
+flySpeedBox.Size = UDim2.new(0,150,0,32)
+flySpeedBox.Position = UDim2.new(0,100,0,124)
+flySpeedBox.BackgroundColor3 = Color3.fromRGB(35,35,42)
+flySpeedBox.Text = tostring(flySpeed)
+flySpeedBox.PlaceholderText = "Fly Speed"
+flySpeedBox.TextColor3 = Color3.fromRGB(255,255,255)
+flySpeedBox.TextSize = 14
+flySpeedBox.Font = Enum.Font.Gotham
+flySpeedBox.ClearTextOnFocus = false
+flySpeedBox.Parent = frame
+
+local flySpeedLabel = Instance.new("TextLabel")
+flySpeedLabel.Size = UDim2.new(0,80,0,30)
+flySpeedLabel.Position = UDim2.new(0,20,0,125)
+flySpeedLabel.BackgroundTransparency = 1
+flySpeedLabel.Text = "Fly:"
+flySpeedLabel.TextColor3 = Color3.fromRGB(220,220,220)
+flySpeedLabel.TextSize = 15
+flySpeedLabel.Font = Enum.Font.Gotham
+flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+flySpeedLabel.Parent = frame
+
+local flyCorner = Instance.new("UICorner")
+flyCorner.CornerRadius = UDim.new(0,8)
+flyCorner.Parent = flySpeedBox
+
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(0,85,0,35)
+speedButton.Position = UDim2.new(0,20,0,170)
+speedButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
+speedButton.Text = "SPEED OFF"
+speedButton.TextColor3 = Color3.fromRGB(255,255,255)
+speedButton.TextSize = 12
+speedButton.Font = Enum.Font.GothamBold
+speedButton.Parent = frame
+
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0,8)
+speedCorner.Parent = speedButton
 
 local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(0,150,0,32)
-speedBox.Position = UDim2.new(0,100,0,124)
+speedBox.Size = UDim2.new(0,150,0,35)
+speedBox.Position = UDim2.new(0,120,0,170)
 speedBox.BackgroundColor3 = Color3.fromRGB(35,35,42)
 speedBox.Text = tostring(walkSpeed)
 speedBox.PlaceholderText = "WalkSpeed"
@@ -123,24 +155,27 @@ speedBox.Font = Enum.Font.Gotham
 speedBox.ClearTextOnFocus = false
 speedBox.Parent = frame
 
-local speedCorner = Instance.new("UICorner")
-speedCorner.CornerRadius = UDim.new(0,8)
-speedCorner.Parent = speedBox
+local speedBoxCorner = Instance.new("UICorner")
+speedBoxCorner.CornerRadius = UDim.new(0,8)
+speedBoxCorner.Parent = speedBox
 
-local jumpLabel = Instance.new("TextLabel")
-jumpLabel.Size = UDim2.new(0,80,0,30)
-jumpLabel.Position = UDim2.new(0,20,0,165)
-jumpLabel.BackgroundTransparency = 1
-jumpLabel.Text = "Jump:"
-jumpLabel.TextColor3 = Color3.fromRGB(220,220,220)
-jumpLabel.TextSize = 15
-jumpLabel.Font = Enum.Font.Gotham
-jumpLabel.TextXAlignment = Enum.TextXAlignment.Left
-jumpLabel.Parent = frame
+local jumpButton = Instance.new("TextButton")
+jumpButton.Size = UDim2.new(0,85,0,35)
+jumpButton.Position = UDim2.new(0,20,0,215)
+jumpButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
+jumpButton.Text = "JUMP OFF"
+jumpButton.TextColor3 = Color3.fromRGB(255,255,255)
+jumpButton.TextSize = 12
+jumpButton.Font = Enum.Font.GothamBold
+jumpButton.Parent = frame
+
+local jumpCorner = Instance.new("UICorner")
+jumpCorner.CornerRadius = UDim.new(0,8)
+jumpCorner.Parent = jumpButton
 
 local jumpBox = Instance.new("TextBox")
-jumpBox.Size = UDim2.new(0,150,0,32)
-jumpBox.Position = UDim2.new(0,100,0,164)
+jumpBox.Size = UDim2.new(0,150,0,35)
+jumpBox.Position = UDim2.new(0,120,0,215)
 jumpBox.BackgroundColor3 = Color3.fromRGB(35,35,42)
 jumpBox.Text = tostring(jumpPower)
 jumpBox.PlaceholderText = "JumpPower"
@@ -150,19 +185,9 @@ jumpBox.Font = Enum.Font.Gotham
 jumpBox.ClearTextOnFocus = false
 jumpBox.Parent = frame
 
-local jumpCorner = Instance.new("UICorner")
-jumpCorner.CornerRadius = UDim.new(0,8)
-jumpCorner.Parent = jumpBox
-
-local info = Instance.new("TextLabel")
-info.Size = UDim2.new(1,-20,0,30)
-info.Position = UDim2.new(0,10,0,210)
-info.BackgroundTransparency = 1
-info.Text = "WASD • SPACE ↑ • CTRL ↓"
-info.TextColor3 = Color3.fromRGB(140,140,150)
-info.TextSize = 12
-info.Font = Enum.Font.Gotham
-info.Parent = frame
+local jumpBoxCorner = Instance.new("UICorner")
+jumpBoxCorner.CornerRadius = UDim.new(0,8)
+jumpBoxCorner.Parent = jumpBox
 
 open.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
@@ -188,14 +213,67 @@ off.MouseButton1Click:Connect(function()
 	end
 end)
 
-speedBox.FocusLost:Connect(function()
-	local value = tonumber(speedBox.Text)
-	if value and value >= 0 then
-		walkSpeed = value
+speedButton.MouseButton1Click:Connect(function()
+	speedOn = not speedOn
+	if speedOn then
+		speedButton.Text = "SPEED ON"
+		speedButton.BackgroundColor3 = Color3.fromRGB(45,170,90)
 		local char = player.Character
 		local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 		if humanoid then
 			humanoid.WalkSpeed = walkSpeed
+		end
+	else
+		speedButton.Text = "SPEED OFF"
+		speedButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
+		local char = player.Character
+		local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = 16
+		end
+	end
+end)
+
+jumpButton.MouseButton1Click:Connect(function()
+	jumpOn = not jumpOn
+	local char = player.Character
+	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+	if jumpOn then
+		jumpButton.Text = "JUMP ON"
+		jumpButton.BackgroundColor3 = Color3.fromRGB(45,170,90)
+		if humanoid then
+			humanoid.UseJumpPower = true
+			humanoid.JumpPower = jumpPower
+		end
+	else
+		jumpButton.Text = "JUMP OFF"
+		jumpButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
+		if humanoid then
+			humanoid.UseJumpPower = true
+			humanoid.JumpPower = 50
+		end
+	end
+end)
+
+flySpeedBox.FocusLost:Connect(function()
+	local value = tonumber(flySpeedBox.Text)
+	if value and value >= 1 then
+		flySpeed = value
+	else
+		flySpeedBox.Text = tostring(flySpeed)
+	end
+end)
+
+speedBox.FocusLost:Connect(function()
+	local value = tonumber(speedBox.Text)
+	if value and value >= 0 then
+		walkSpeed = value
+		if speedOn then
+			local char = player.Character
+			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				humanoid.WalkSpeed = walkSpeed
+			end
 		end
 	else
 		speedBox.Text = tostring(walkSpeed)
@@ -206,29 +284,18 @@ jumpBox.FocusLost:Connect(function()
 	local value = tonumber(jumpBox.Text)
 	if value and value >= 0 then
 		jumpPower = value
-		local char = player.Character
-		local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-		if humanoid then
-			humanoid.UseJumpPower = true
-			humanoid.JumpPower = jumpPower
+		if jumpOn then
+			local char = player.Character
+			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				humanoid.UseJumpPower = true
+				humanoid.JumpPower = jumpPower
+			end
 		end
 	else
 		jumpBox.Text = tostring(jumpPower)
 	end
 end)
-
-local function setupCharacter(char)
-	local humanoid = char:WaitForChild("Humanoid")
-	humanoid.WalkSpeed = walkSpeed
-	humanoid.UseJumpPower = true
-	humanoid.JumpPower = jumpPower
-end
-
-if player.Character then
-	setupCharacter(player.Character)
-end
-
-player.CharacterAdded:Connect(setupCharacter)
 
 connection = run.RenderStepped:Connect(function()
 	if not flying then
@@ -265,7 +332,8 @@ connection = run.RenderStepped:Connect(function()
 	end
 	if uis:IsKeyDown(Enum.KeyCode.LeftControl) then
 		move -= Vector3.new(0,1,0)
-	end	if move.Magnitude > 0 then
+	end
+	if move.Magnitude > 0 then
 		bv.Velocity = move.Unit * flySpeed
 	else
 		bv.Velocity = Vector3.zero
