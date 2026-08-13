@@ -3,11 +3,13 @@ local uis = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 
 local flying = false
+local speedOn = false
+local jumpOn = false
+
 local flySpeed = 60
 local walkSpeed = 16
 local jumpPower = 50
-local speedOn = false
-local jumpOn = false
+
 local connection
 
 local gui = Instance.new("ScreenGui")
@@ -18,7 +20,7 @@ gui.Parent = player:WaitForChild("PlayerGui")
 local open = Instance.new("TextButton")
 open.Size = UDim2.new(0,85,0,42)
 open.Position = UDim2.new(0,20,0.5,-21)
-open.BackgroundColor3 = Color3.fromRGB(30,30,35)
+open.BackgroundColor3 = Color3.fromRGB(25,25,30)
 open.Text = "VANH"
 open.TextColor3 = Color3.fromRGB(255,255,255)
 open.TextSize = 18
@@ -30,204 +32,223 @@ openCorner.CornerRadius = UDim.new(0,10)
 openCorner.Parent = open
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,290,0,300)
-frame.Position = UDim2.new(0.5,-145,0.5,-150)
-frame.BackgroundColor3 = Color3.fromRGB(22,22,27)
+frame.Size = UDim2.new(0,330,0,330)
+frame.Position = UDim2.new(0.5,-165,0.5,-165)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,25)
 frame.Visible = false
 frame.Parent = gui
 
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0,14)
+frameCorner.CornerRadius = UDim.new(0,15)
 frameCorner.Parent = frame
 
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,55)
+top.BackgroundColor3 = Color3.fromRGB(28,28,34)
+top.Parent = frame
+
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0,15)
+topCorner.Parent = top
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,-60,0,40)
-title.Position = UDim2.new(0,10,0,5)
+title.Size = UDim2.new(1,-100,1,0)
+title.Position = UDim2.new(0,18,0,0)
 title.BackgroundTransparency = 1
 title.Text = "VANH"
 title.TextColor3 = Color3.fromRGB(255,255,255)
-title.TextSize = 24
+title.TextSize = 22
 title.Font = Enum.Font.GothamBold
-title.Parent = frame
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = top
 
 local close = Instance.new("TextButton")
-close.Size = UDim2.new(0,32,0,32)
-close.Position = UDim2.new(1,-42,0,8)
+close.Size = UDim2.new(0,35,0,35)
+close.Position = UDim2.new(1,-45,0,10)
 close.BackgroundColor3 = Color3.fromRGB(180,55,55)
 close.Text = "X"
 close.TextColor3 = Color3.fromRGB(255,255,255)
 close.TextSize = 16
 close.Font = Enum.Font.GothamBold
-close.Parent = frame
+close.Parent = top
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0,8)
+closeCorner.CornerRadius = UDim.new(0,9)
 closeCorner.Parent = close
 
-local status = Instance.new("TextLabel")
-status.Size = UDim2.new(1,-20,0,25)
-status.Position = UDim2.new(0,10,0,42)
-status.BackgroundTransparency = 1
-status.Text = "Fly: OFF"
-status.TextColor3 = Color3.fromRGB(255,80,80)
-status.TextSize = 14
-status.Font = Enum.Font.Gotham
-status.Parent = frame
+local settings = Instance.new("TextButton")
+settings.Size = UDim2.new(0,140,0,38)
+settings.Position = UDim2.new(0,20,0,70)
+settings.BackgroundColor3 = Color3.fromRGB(55,55,65)
+settings.Text = "SETTINGS"
+settings.TextColor3 = Color3.fromRGB(255,255,255)
+settings.TextSize = 14
+settings.Font = Enum.Font.GothamBold
+settings.Parent = frame
 
-local on = Instance.new("TextButton")
-on.Size = UDim2.new(0,105,0,40)
-on.Position = UDim2.new(0,20,0,75)
-on.BackgroundColor3 = Color3.fromRGB(45,170,90)
-on.Text = "ON"
-on.TextColor3 = Color3.fromRGB(255,255,255)
-on.TextSize = 16
-on.Font = Enum.Font.GothamBold
-on.Parent = frame
+local settingsCorner = Instance.new("UICorner")
+settingsCorner.CornerRadius = UDim.new(0,9)
+settingsCorner.Parent = settings
 
-local onCorner = Instance.new("UICorner")
-onCorner.CornerRadius = UDim.new(0,9)
-onCorner.Parent = on
+local farm = Instance.new("TextButton")
+farm.Size = UDim2.new(0,140,0,38)
+farm.Position = UDim2.new(0,170,0,70)
+farm.BackgroundColor3 = Color3.fromRGB(35,35,42)
+farm.Text = "FARM"
+farm.TextColor3 = Color3.fromRGB(180,180,190)
+farm.TextSize = 14
+farm.Font = Enum.Font.GothamBold
+farm.Parent = frame
 
-local off = Instance.new("TextButton")
-off.Size = UDim2.new(0,105,0,40)
-off.Position = UDim2.new(0,145,0,75)
-off.BackgroundColor3 = Color3.fromRGB(180,55,55)
-off.Text = "OFF"
-off.TextColor3 = Color3.fromRGB(255,255,255)
-off.TextSize = 16
-off.Font = Enum.Font.GothamBold
-off.Parent = frame
+local farmCorner = Instance.new("UICorner")
+farmCorner.CornerRadius = UDim.new(0,9)
+farmCorner.Parent = farm
 
-local offCorner = Instance.new("UICorner")
-offCorner.CornerRadius = UDim.new(0,9)
-offCorner.Parent = off
+local settingsPage = Instance.new("Frame")
+settingsPage.Size = UDim2.new(1,-40,1,-125)
+settingsPage.Position = UDim2.new(0,20,0,120)
+settingsPage.BackgroundTransparency = 1
+settingsPage.Parent = frame
 
-local flySpeedBox = Instance.new("TextBox")
-flySpeedBox.Size = UDim2.new(0,150,0,32)
-flySpeedBox.Position = UDim2.new(0,100,0,124)
-flySpeedBox.BackgroundColor3 = Color3.fromRGB(35,35,42)
-flySpeedBox.Text = tostring(flySpeed)
-flySpeedBox.PlaceholderText = "Fly Speed"
-flySpeedBox.TextColor3 = Color3.fromRGB(255,255,255)
-flySpeedBox.TextSize = 14
-flySpeedBox.Font = Enum.Font.Gotham
-flySpeedBox.ClearTextOnFocus = false
-flySpeedBox.Parent = frame
+local farmPage = Instance.new("Frame")
+farmPage.Size = UDim2.new(1,-40,1,-125)
+farmPage.Position = UDim2.new(0,20,0,120)
+farmPage.BackgroundTransparency = 1
+farmPage.Visible = false
+farmPage.Parent = frame
 
-local flySpeedLabel = Instance.new("TextLabel")
-flySpeedLabel.Size = UDim2.new(0,80,0,30)
-flySpeedLabel.Position = UDim2.new(0,20,0,125)
-flySpeedLabel.BackgroundTransparency = 1
-flySpeedLabel.Text = "Fly:"
-flySpeedLabel.TextColor3 = Color3.fromRGB(220,220,220)
-flySpeedLabel.TextSize = 15
-flySpeedLabel.Font = Enum.Font.Gotham
-flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-flySpeedLabel.Parent = frame
+local function createButton(text,y,color)
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(0,100,0,38)
+	button.Position = UDim2.new(0,0,0,y)
+	button.BackgroundColor3 = color
+	button.Text = text
+	button.TextColor3 = Color3.fromRGB(255,255,255)
+	button.TextSize = 12
+	button.Font = Enum.Font.GothamBold
+	button.Parent = settingsPage
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0,9)
+	corner.Parent = button
+	return button
+end
 
-local flyCorner = Instance.new("UICorner")
-flyCorner.CornerRadius = UDim.new(0,8)
-flyCorner.Parent = flySpeedBox
+local function createBox(value,y)
+	local box = Instance.new("TextBox")
+	box.Size = UDim2.new(0,165,0,38)
+	box.Position = UDim2.new(0,125,0,y)
+	box.BackgroundColor3 = Color3.fromRGB(35,35,42)
+	box.Text = tostring(value)
+	box.TextColor3 = Color3.fromRGB(255,255,255)
+	box.TextSize = 14
+	box.Font = Enum.Font.Gotham
+	box.ClearTextOnFocus = false
+	box.Parent = settingsPage
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0,9)
+	corner.Parent = box
+	return box
+end
 
-local speedButton = Instance.new("TextButton")
-speedButton.Size = UDim2.new(0,85,0,35)
-speedButton.Position = UDim2.new(0,20,0,170)
-speedButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
-speedButton.Text = "SPEED OFF"
-speedButton.TextColor3 = Color3.fromRGB(255,255,255)
-speedButton.TextSize = 12
-speedButton.Font = Enum.Font.GothamBold
-speedButton.Parent = frame
+local flyButton = createButton("FLY OFF",0,Color3.fromRGB(90,90,100))
+local flyBox = createBox(flySpeed,0)
 
-local speedCorner = Instance.new("UICorner")
-speedCorner.CornerRadius = UDim.new(0,8)
-speedCorner.Parent = speedButton
+local speedButton = createButton("SPEED OFF",55,Color3.fromRGB(90,90,100))
+local speedBox = createBox(walkSpeed,55)
 
-local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(0,150,0,35)
-speedBox.Position = UDim2.new(0,120,0,170)
-speedBox.BackgroundColor3 = Color3.fromRGB(35,35,42)
-speedBox.Text = tostring(walkSpeed)
-speedBox.PlaceholderText = "WalkSpeed"
-speedBox.TextColor3 = Color3.fromRGB(255,255,255)
-speedBox.TextSize = 14
-speedBox.Font = Enum.Font.Gotham
-speedBox.ClearTextOnFocus = false
-speedBox.Parent = frame
+local jumpButton = createButton("JUMP OFF",110,Color3.fromRGB(90,90,100))
+local jumpBox = createBox(jumpPower,110)
 
-local speedBoxCorner = Instance.new("UICorner")
-speedBoxCorner.CornerRadius = UDim.new(0,8)
-speedBoxCorner.Parent = speedBox
+local flyText = Instance.new("TextLabel")
+flyText.Size = UDim2.new(0,100,0,20)
+flyText.Position = UDim2.new(0,0,0,35)
+flyText.BackgroundTransparency = 1
+flyText.Text = "Fly Speed"
+flyText.TextColor3 = Color3.fromRGB(150,150,160)
+flyText.TextSize = 11
+flyText.Font = Enum.Font.Gotham
+flyText.Parent = settingsPage
 
-local jumpButton = Instance.new("TextButton")
-jumpButton.Size = UDim2.new(0,85,0,35)
-jumpButton.Position = UDim2.new(0,20,0,215)
-jumpButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
-jumpButton.Text = "JUMP OFF"
-jumpButton.TextColor3 = Color3.fromRGB(255,255,255)
-jumpButton.TextSize = 12
-jumpButton.Font = Enum.Font.GothamBold
-jumpButton.Parent = frame
+local speedText = Instance.new("TextLabel")
+speedText.Size = UDim2.new(0,100,0,20)
+speedText.Position = UDim2.new(0,0,0,90)
+speedText.BackgroundTransparency = 1
+speedText.Text = "Walk Speed"
+speedText.TextColor3 = Color3.fromRGB(150,150,160)
+speedText.TextSize = 11
+speedText.Font = Enum.Font.Gotham
+speedText.Parent = settingsPage
 
-local jumpCorner = Instance.new("UICorner")
-jumpCorner.CornerRadius = UDim.new(0,8)
-jumpCorner.Parent = jumpButton
+local jumpText = Instance.new("TextLabel")
+jumpText.Size = UDim2.new(0,100,0,20)
+jumpText.Position = UDim2.new(0,0,0,145)
+jumpText.BackgroundTransparency = 1
+jumpText.Text = "Jump Power"
+jumpText.TextColor3 = Color3.fromRGB(150,150,160)
+jumpText.TextSize = 11
+jumpText.Font = Enum.Font.Gotham
+jumpText.Parent = settingsPage
 
-local jumpBox = Instance.new("TextBox")
-jumpBox.Size = UDim2.new(0,150,0,35)
-jumpBox.Position = UDim2.new(0,120,0,215)
-jumpBox.BackgroundColor3 = Color3.fromRGB(35,35,42)
-jumpBox.Text = tostring(jumpPower)
-jumpBox.PlaceholderText = "JumpPower"
-jumpBox.TextColor3 = Color3.fromRGB(255,255,255)
-jumpBox.TextSize = 14
-jumpBox.Font = Enum.Font.Gotham
-jumpBox.ClearTextOnFocus = false
-jumpBox.Parent = frame
-
-local jumpBoxCorner = Instance.new("UICorner")
-jumpBoxCorner.CornerRadius = UDim.new(0,8)
-jumpBoxCorner.Parent = jumpBox
+local farmText = Instance.new("TextLabel")
+farmText.Size = UDim2.new(1,0,0,40)
+farmText.Position = UDim2.new(0,0,0,20)
+farmText.BackgroundTransparency = 1
+farmText.Text = "FARM"
+farmText.TextColor3 = Color3.fromRGB(150,150,160)
+farmText.TextSize = 16
+farmText.Font = Enum.Font.GothamBold
+farmText.Parent = farmPage
 
 open.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
 end)
 
-on.MouseButton1Click:Connect(function()
-	flying = true
-	status.Text = "Fly: ON"
-	status.TextColor3 = Color3.fromRGB(70,220,110)
+settings.MouseButton1Click:Connect(function()
+	settingsPage.Visible = true
+	farmPage.Visible = false
+	settings.BackgroundColor3 = Color3.fromRGB(55,55,65)
+	farm.BackgroundColor3 = Color3.fromRGB(35,35,42)
 end)
 
-off.MouseButton1Click:Connect(function()
-	flying = false
-	status.Text = "Fly: OFF"
-	status.TextColor3 = Color3.fromRGB(255,80,80)
-	local char = player.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if hrp then
-		local bv = hrp:FindFirstChild("FlyVelocity")
-		if bv then
-			bv:Destroy()
+farm.MouseButton1Click:Connect(function()
+	settingsPage.Visible = false
+	farmPage.Visible = true
+	settings.BackgroundColor3 = Color3.fromRGB(35,35,42)
+	farm.BackgroundColor3 = Color3.fromRGB(55,55,65)
+end)
+
+flyButton.MouseButton1Click:Connect(function()
+	flying = not flying
+	if flying then
+		flyButton.Text = "FLY ON"
+		flyButton.BackgroundColor3 = Color3.fromRGB(45,170,90)
+	else
+		flyButton.Text = "FLY OFF"
+		flyButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
+		local char = player.Character
+		local hrp = char and char:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			local bv = hrp:FindFirstChild("FlyVelocity")
+			if bv then
+				bv:Destroy()
+			end
 		end
 	end
 end)
 
 speedButton.MouseButton1Click:Connect(function()
 	speedOn = not speedOn
+	local char = player.Character
+	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	if speedOn then
 		speedButton.Text = "SPEED ON"
 		speedButton.BackgroundColor3 = Color3.fromRGB(45,170,90)
-		local char = player.Character
-		local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 		if humanoid then
 			humanoid.WalkSpeed = walkSpeed
 		end
 	else
 		speedButton.Text = "SPEED OFF"
 		speedButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
-		local char = player.Character
-		local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 		if humanoid then
 			humanoid.WalkSpeed = 16
 		end
@@ -255,12 +276,12 @@ jumpButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-flySpeedBox.FocusLost:Connect(function()
-	local value = tonumber(flySpeedBox.Text)
+flyBox.FocusLost:Connect(function()
+	local value = tonumber(flyBox.Text)
 	if value and value >= 1 then
 		flySpeed = value
 	else
-		flySpeedBox.Text = tostring(flySpeed)
+		flyBox.Text = tostring(flySpeed)
 	end
 end)
 
@@ -296,6 +317,23 @@ jumpBox.FocusLost:Connect(function()
 		jumpBox.Text = tostring(jumpPower)
 	end
 end)
+
+local function setupCharacter(char)
+	local humanoid = char:WaitForChild("Humanoid")
+	if speedOn then
+		humanoid.WalkSpeed = walkSpeed
+	end
+	if jumpOn then
+		humanoid.UseJumpPower = true
+		humanoid.JumpPower = jumpPower
+	end
+end
+
+if player.Character then
+	setupCharacter(player.Character)
+end
+
+player.CharacterAdded:Connect(setupCharacter)
 
 connection = run.RenderStepped:Connect(function()
 	if not flying then
@@ -340,7 +378,69 @@ connection = run.RenderStepped:Connect(function()
 	end
 end)
 
+local confirm = Instance.new("Frame")
+confirm.Size = UDim2.new(0,280,0,145)
+confirm.Position = UDim2.new(0.5,-140,0.5,-72)
+confirm.BackgroundColor3 = Color3.fromRGB(25,25,30)
+confirm.Visible = false
+confirm.ZIndex = 10
+confirm.Parent = gui
+
+local confirmCorner = Instance.new("UICorner")
+confirmCorner.CornerRadius = UDim.new(0,13)
+confirmCorner.Parent = confirm
+
+local question = Instance.new("TextLabel")
+question.Size = UDim2.new(1,-20,0,65)
+question.Position = UDim2.new(0,10,0,10)
+question.BackgroundTransparency = 1
+question.Text = "Bạn có xác định tắt script?"
+question.TextColor3 = Color3.fromRGB(255,255,255)
+question.TextSize = 16
+question.Font = Enum.Font.GothamBold
+question.TextWrapped = true
+question.ZIndex = 11
+question.Parent = confirm
+
+local yes = Instance.new("TextButton")
+yes.Size = UDim2.new(0,105,0,38)
+yes.Position = UDim2.new(0,25,0,90)
+yes.BackgroundColor3 = Color3.fromRGB(180,55,55)
+yes.Text = "CÓ"
+yes.TextColor3 = Color3.fromRGB(255,255,255)
+yes.TextSize = 14
+yes.Font = Enum.Font.GothamBold
+yes.ZIndex = 11
+yes.Parent = confirm
+
+local yesCorner = Instance.new("UICorner")
+yesCorner.CornerRadius = UDim.new(0,8)
+yesCorner.Parent = yes
+
+local no = Instance.new("TextButton")
+no.Size = UDim2.new(0,105,0,38)
+no.Position = UDim2.new(0,150,0,90)
+no.BackgroundColor3 = Color3.fromRGB(60,60,70)
+no.Text = "KHÔNG"
+no.TextColor3 = Color3.fromRGB(255,255,255)
+no.TextSize = 14
+no.Font = Enum.Font.GothamBold
+no.ZIndex = 11
+no.Parent = confirm
+
+local noCorner = Instance.new("UICorner")
+noCorner.CornerRadius = UDim.new(0,8)
+noCorner.Parent = no
+
 close.MouseButton1Click:Connect(function()
+	confirm.Visible = true
+end)
+
+no.MouseButton1Click:Connect(function()
+	confirm.Visible = false
+end)
+
+yes.MouseButton1Click:Connect(function()
 	flying = false
 	local char = player.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -352,6 +452,7 @@ close.MouseButton1Click:Connect(function()
 	end
 	if connection then
 		connection:Disconnect()
+		connection = nil
 	end
 	gui:Destroy()
 end)
@@ -360,15 +461,15 @@ local dragging = false
 local dragStart
 local startPos
 
-open.InputBegan:Connect(function(input)
+top.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = true
 		dragStart = input.Position
-		startPos = open.Position
+		startPos = frame.Position
 	end
 end)
 
-open.InputEnded:Connect(function(input)
+top.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = false
 	end
@@ -377,11 +478,41 @@ end)
 uis.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta = input.Position - dragStart
-		open.Position = UDim2.new(
+		frame.Position = UDim2.new(
 			startPos.X.Scale,
 			startPos.X.Offset + delta.X,
 			startPos.Y.Scale,
 			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+local openDragging = false
+local openDragStart
+local openStartPos
+
+open.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		openDragging = true
+		openDragStart = input.Position
+		openStartPos = open.Position
+	end
+end)
+
+open.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		openDragging = false
+	end
+end)
+
+uis.InputChanged:Connect(function(input)
+	if openDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - openDragStart
+		open.Position = UDim2.new(
+			openStartPos.X.Scale,
+			openStartPos.X.Offset + delta.X,
+			openStartPos.Y.Scale,
+			openStartPos.Y.Offset + delta.Y
 		)
 	end
 end)
