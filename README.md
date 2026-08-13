@@ -1,149 +1,93 @@
 local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
+local run = game:GetService("RunService")
 
-local screenGui = script.Parent
-local openBtn = screenGui:WaitForChild("OpenButton")
-local mainFrame = screenGui:WaitForChild("MainFrame")
+local flying = false
+local speed = 60
 
-local flyBtn = mainFrame:WaitForChild("FlyBtn")
-local speedBtn = mainFrame:WaitForChild("SpeedBtn")
-local jumpBtn = mainFrame:WaitForChild("JumpBtn")
-local espBtn = mainFrame:WaitForChild("ESPBtn")
+local gui = Instance.new("ScreenGui")
+gui.Name = "FlyGui"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+local open = Instance.new("TextButton")
+open.Size = UDim2.new(0, 80, 0, 40)
+open.Position = UDim2.new(0, 20, 0.5, -20)
+open.Text = "FLY"
+open.Parent = gui
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 130)
+frame.Position = UDim2.new(0.5, -110, 0.5, -65)
+frame.Visible = false
+frame.Parent = gui
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.Text = "FLY CONTROL"
+title.Parent = frame
+local on = Instance.new("TextButton")
+on.Size = UDim2.new(0, 80, 0, 40)
+on.Position = UDim2.new(0, 20, 0, 55)
+on.Text = "ON"
+on.Parent = frame
+local off = Instance.new("TextButton")
+off.Size = UDim2.new(0, 80, 0, 40)
+off.Position = UDim2.new(0, 120, 0, 55)
+off.Text = "OFF"
+off.Parent = frame
 
-mainFrame.Visible = false
-local speedEnabled = false
-local jumpEnabled = false
-local flyEnabled = false
-local espEnabled = false
-
-openBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = not mainFrame.Visible
+open.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
 end)
 
-speedBtn.MouseButton1Click:Connect(function()
-	speedEnabled = not speedEnabled
+on.MouseButton1Click:Connect(function()
+	flying = true
+end)
+
+off.MouseButton1Click:Connect(function()
+	flying = false
 	local char = player.Character
-	if char and char:FindFirstChild("Humanoid") then
-		if speedEnabled then
-			char.Humanoid.WalkSpeed = 100
-			speedBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-		else
-			char.Humanoid.WalkSpeed = 16
-			speedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-		end
-	end
-end)
-
-jumpBtn.MouseButton1Click:Connect(function()
-	jumpEnabled = not jumpEnabled
-	local char = player.Character
-	if char and char:FindFirstChild("Humanoid") then
-		char.Humanoid.UseJumpPower = true
-		if jumpEnabled then
-			char.Humanoid.JumpPower = 150
-			jumpBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-		else
-			char.Humanoid.JumpPower = 50
-			jumpBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-		end
-	end
-end)
-
-local function createESP(targetPlayer)
-	if targetPlayer.Character and not targetPlayer.Character:FindFirstChild("ESPHighlight") then
-		local highlight = Instance.new("Highlight")
-		highlight.Name = "ESPHighlight"
-		highlight.Parent = targetPlayer.Character
-		highlight.FillColor = Color3.fromRGB(255, 0, 0)
-		highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-	end
-end
-
-local function removeESP()
-	for _, p in pairs(game.Players:GetPlayers()) do
-		if p.Character and p.Character:FindFirstChild("ESPHighlight") then
-			p.Character.ESPHighlight:Destroy()
-		end
-	end
-end
-
-espBtn.MouseButton1Click:Connect(function()
-	espEnabled = not espEnabled
-	if espEnabled then
-		espBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-	else
-		espBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-		removeESP()
-	end
-end)
-
-RunService.RenderStepped:Connect(function()
-	if espEnabled then
-		for _, p in pairs(game.Players:GetPlayers()) do
-			if p ~= player and p.Character then
-				createESP(p)
-			end
-		end
-	end
-end)
-
-local bv, bg
-
-flyBtn.MouseButton1Click:Connect(function()
-	flyEnabled = not flyEnabled
-	local char = player.Character
-	local root = char and char:FindFirstChild("HumanoidRootPart")
-	local hum = char and char:FindFirstChild("Humanoid")
-	if flyEnabled then
-		flyBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-		if root and hum then
-			hum.PlatformStand = true
-			bv = Instance.new("BodyVelocity", root)
-			bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-			bv.Velocity = Vector3.new(0, 0, 0)
-			bg = Instance.new("BodyGyro", root)
-			bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-			bg.CFrame = root.CFrame
-		end
-	else
-		flyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		local bv = hrp:FindFirstChild("FlyVelocity")
 		if bv then
 			bv:Destroy()
 		end
-		if bg then
-			bg:Destroy()
-		end
-		if hum then
-			hum.PlatformStand = false
-		end
 	end
 end)
-
-RunService.RenderStepped:Connect(function()
-	if flyEnabled and bv and bg then
-		local camera = workspace.CurrentCamera
-		local moveDir = Vector3.new(0, 0, 0)
-		if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-			moveDir = moveDir + camera.CFrame.LookVector
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-			moveDir = moveDir - camera.CFrame.LookVector
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-			moveDir = moveDir - camera.CFrame.RightVector
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-			moveDir = moveDir + camera.CFrame.RightVector
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-			moveDir = moveDir + Vector3.new(0, 1, 0)
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-			moveDir = moveDir - Vector3.new(0, 1, 0)
-		end
-		bv.Velocity = moveDir * 50
-		bg.CFrame = camera.CFrame
+run.RenderStepped:Connect(function()
+	if not flying then return end
+	local char = player.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	local bv = hrp:FindFirstChild("FlyVelocity")
+	if not bv then
+		bv = Instance.new("BodyVelocity")
+		bv.Name = "FlyVelocity"
+		bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		bv.Parent = hrp
+	end
+	local cam = workspace.CurrentCamera
+	local move = Vector3.zero
+	if uis:IsKeyDown(Enum.KeyCode.W) then
+		move += cam.CFrame.LookVector
+	end
+	if uis:IsKeyDown(Enum.KeyCode.S) then
+		move -= cam.CFrame.LookVector
+	end
+	if uis:IsKeyDown(Enum.KeyCode.A) then
+		move -= cam.CFrame.RightVector
+	end
+	if uis:IsKeyDown(Enum.KeyCode.D) then
+		move += cam.CFrame.RightVector
+	end
+	if uis:IsKeyDown(Enum.KeyCode.Space) then
+		move += Vector3.new(0, 1, 0)
+	end
+	if uis:IsKeyDown(Enum.KeyCode.LeftControl) then
+		move -= Vector3.new(0, 1, 0)
+	end
+	if move.Magnitude > 0 then
+		bv.Velocity = move.Unit * speed
+	else
+		bv.Velocity = Vector3.zero
 	end
 end)
