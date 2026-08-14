@@ -187,19 +187,31 @@ local function autoAttack()
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-	local farm=workspace:FindFirstChild("NPCSpawner") or workspace:FindFirstChild("Enemies") or workspace
-	if not farm then return end
-	for _,npc in ipairs(farm:GetChildren()) do
-		if npc:FindFirstChild("Humanoid") then
-			local npcHrp=npc:FindFirstChild("HumanoidRootPart")
-			if npcHrp and (npcHrp.Position-hrp.Position).Magnitude<50 then
-				hrp.CFrame=npcHrp.CFrame+npcHrp.CFrame.LookVector*3
-				pcall(function()
-					game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):FindFirstChild("Attack"):FireServer()
-				end)
-				task.wait(0.5)
+	local closestEnemy=nil
+	local closestDist=100
+	local enemiesFolder=workspace:FindFirstChild("Enemies")
+	if enemiesFolder then
+		for _,enemy in ipairs(enemiesFolder:GetChildren()) do
+			local eHrp=enemy:FindFirstChild("HumanoidRootPart")
+			local eHm=enemy:FindFirstChildOfClass("Humanoid")
+			if eHrp and eHm and eHm.Health>0 then
+				local dist=(eHrp.Position-hrp.Position).Magnitude
+				if dist<closestDist then
+					closestDist=dist
+					closestEnemy=enemy
+				end
 			end
 		end
+	end
+	if closestEnemy then
+		local eHrp=closestEnemy:FindFirstChild("HumanoidRootPart")
+		hrp.CFrame=eHrp.CFrame+eHrp.CFrame.LookVector*5
+		pcall(function()
+			local attack=rs:WaitForChild("Remotes"):FindFirstChild("Attack")
+			if attack then
+				attack:FireServer()
+			end
+		end)
 	end
 end
 espButton.MouseButton1Click:Connect(function()
@@ -556,6 +568,6 @@ end)
 task.spawn(function()
 	while gui.Parent do
 		autoAttack()
-		task.wait(0.5)
+		task.wait(0.2)
 	end
 end)
