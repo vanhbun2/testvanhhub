@@ -32,7 +32,7 @@ openCorner.CornerRadius = UDim.new(0,10)
 openCorner.Parent = open
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,330,0,390)
+frame.Size = UDim2.new(0,330,0,410)
 frame.Position = UDim2.new(0.5,-165,0.5,-165)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,25)
 frame.Visible = false
@@ -159,108 +159,6 @@ local speedBox = createBox(walkSpeed,55)
 local jumpButton = createButton("JUMP OFF",110,Color3.fromRGB(90,90,100))
 local jumpBox = createBox(jumpPower,110)
 
-local espOn = false
-
-local espButton = createButton("ESP OFF",165,Color3.fromRGB(90,90,100))
-
-local espText = Instance.new("TextLabel")
-espText.Size = UDim2.new(0,100,0,20)
-espText.Position = UDim2.new(0,0,0,200)
-espText.BackgroundTransparency = 1
-espText.Text = "ESP Player"
-espText.TextColor3 = Color3.fromRGB(150,150,160)
-espText.TextSize = 11
-espText.Font = Enum.Font.Gotham
-espText.Parent = settingsPage
-
-local espFolder = Instance.new("Folder")
-espFolder.Name = "VanhESP"
-espFolder.Parent = gui
-
-local function clearESP()
-	for _,v in ipairs(espFolder:GetChildren()) do
-		v:Destroy()
-	end
-end
-
-local function updateESP()
-	clearESP()
-	if not espOn then
-		return
-	end
-	for _,target in ipairs(game.Players:GetPlayers()) do
-		if target ~= player and target.Character then
-			local char = target.Character
-			local humanoid = char:FindFirstChildOfClass("Humanoid")
-			local head = char:FindFirstChild("Head")
-			if humanoid then
-				local highlight = Instance.new("Highlight")
-				highlight.Name = target.Name .. "_Highlight"
-				highlight.Adornee = char
-				highlight.FillTransparency = 0.65
-				highlight.OutlineTransparency = 0
-				highlight.Parent = espFolder
-				if head then
-					local billboard = Instance.new("BillboardGui")
-					billboard.Name = target.Name .. "_Info"
-					billboard.Adornee = head
-					billboard.Size = UDim2.new(0,240,0,55)
-					billboard.StudsOffset = Vector3.new(0,3,0)
-					billboard.AlwaysOnTop = true
-					billboard.Parent = espFolder
-					local info = Instance.new("TextLabel")
-					info.Size = UDim2.new(1,0,1,0)
-					info.BackgroundTransparency = 1
-					info.TextColor3 = Color3.fromRGB(255,255,255)
-					info.TextStrokeTransparency = 0
-					info.TextSize = 14
-					info.Font = Enum.Font.GothamBold
-					info.Text = target.DisplayName .. " [" .. target.Name .. "]\nHP: " ..
-						math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth)
-					info.Parent = billboard
-				end
-			end
-		end
-	end
-end
-
-espButton.MouseButton1Click:Connect(function()
-	espOn = not espOn
-	if espOn then
-		espButton.Text = "ESP ON"
-		espButton.BackgroundColor3 = Color3.fromRGB(45,170,90)
-		updateESP()
-	else
-		espButton.Text = "ESP OFF"
-		espButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
-		clearESP()
-	end
-end)
-
-game.Players.PlayerAdded:Connect(function(target)
-	target.CharacterAdded:Connect(function()
-		if espOn then
-			task.wait(0.3)
-			updateESP()
-		end
-	end)
-end)
-
-game.Players.PlayerRemoving:Connect(function()
-	if espOn then
-		updateESP()
-	end
-end)
-
-task.spawn(function()
-	while gui.Parent do
-		if espOn then
-			updateESP()
-		end
-		task.wait(0.25)
-	end
-end)
-
 local flyText = Instance.new("TextLabel")
 flyText.Size = UDim2.new(0,100,0,20)
 flyText.Position = UDim2.new(0,0,0,35)
@@ -292,7 +190,7 @@ jumpText.Font = Enum.Font.Gotham
 jumpText.Parent = settingsPage
 
 local farmText = Instance.new("TextLabel")
-farmText.Size = UDim2.new(1,0,0,40)
+farmText.Size = UDim2.new(1,0,0,35)
 farmText.Position = UDim2.new(0,0,0,10)
 farmText.BackgroundTransparency = 1
 farmText.Text = "AUTO FARM"
@@ -302,8 +200,8 @@ farmText.Font = Enum.Font.GothamBold
 farmText.Parent = farmPage
 
 local farmButton = Instance.new("TextButton")
-farmButton.Size = UDim2.new(0,290,0,42)
-farmButton.Position = UDim2.new(0,0,0,55)
+farmButton.Size = UDim2.new(0,290,0,40)
+farmButton.Position = UDim2.new(0,0,0,50)
 farmButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
 farmButton.Text = "FARM OFF"
 farmButton.TextColor3 = Color3.fromRGB(255,255,255)
@@ -315,29 +213,43 @@ local farmCorner = Instance.new("UICorner")
 farmCorner.CornerRadius = UDim.new(0,9)
 farmCorner.Parent = farmButton
 
+local attackButton = Instance.new("TextButton")
+attackButton.Size = UDim2.new(0,290,0,36)
+attackButton.Position = UDim2.new(0,0,0,98)
+attackButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
+attackButton.Text = "ATTACK: BOTH"
+attackButton.TextColor3 = Color3.fromRGB(255,255,255)
+attackButton.TextSize = 13
+attackButton.Font = Enum.Font.GothamBold
+attackButton.Parent = farmPage
+
+local attackCorner = Instance.new("UICorner")
+attackCorner.CornerRadius = UDim.new(0,9)
+attackCorner.Parent = attackButton
+
 local farmStatus = Instance.new("TextLabel")
-farmStatus.Size = UDim2.new(1,0,0,80)
-farmStatus.Position = UDim2.new(0,0,0,110)
+farmStatus.Size = UDim2.new(0,290,0,85)
+farmStatus.Position = UDim2.new(0,0,0,145)
 farmStatus.BackgroundTransparency = 1
 farmStatus.Text = "Status: OFF"
 farmStatus.TextColor3 = Color3.fromRGB(180,180,190)
 farmStatus.TextSize = 13
 farmStatus.Font = Enum.Font.Gotham
 farmStatus.TextWrapped = true
+farmStatus.TextYAlignment = Enum.TextYAlignment.Top
 farmStatus.Parent = farmPage
 
 local farmOn = false
 local farmBusy = false
+local farmAttackMode = "Both"
+local farmHeight = 12
+local attackDelay = 0.12
 
-local function getNumberFromObject(obj, names)
-	if not obj then
-		return nil
-	end
+local function getNumberFromObject(obj,names)
+	if not obj then return nil end
 	for _,name in ipairs(names) do
 		local attr = obj:GetAttribute(name)
-		if typeof(attr) == "number" then
-			return attr
-		end
+		if typeof(attr) == "number" then return attr end
 		local value = obj:FindFirstChild(name)
 		if value and (value:IsA("IntValue") or value:IsA("NumberValue")) then
 			return value.Value
@@ -355,80 +267,48 @@ local function getPlayerLevel()
 		end
 	end
 	local attr = player:GetAttribute("Level")
-	if typeof(attr) == "number" then
-		return attr
-	end
-	local char = player.Character
-	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-	if humanoid then
-		local attr2 = humanoid:GetAttribute("Level")
-		if typeof(attr2) == "number" then
-			return attr2
-		end
-	end
+	if typeof(attr) == "number" then return attr end
 	return nil
 end
 
 local function findBestQuest()
 	local level = getPlayerLevel()
-	if not level then
-		return nil, nil, "Không tìm thấy Level"
-	end
+	if not level then return nil,nil,"Không tìm thấy Level" end
 	local bestQuest
 	local bestLevel = -math.huge
+	local bestTarget
 	for _,obj in ipairs(workspace:GetDescendants()) do
 		if obj:IsA("Folder") or obj:IsA("Model") then
-			local required = getNumberFromObject(obj, {
+			local required = getNumberFromObject(obj,{
 				"MinLevel","RequiredLevel","Level","QuestLevel","LevelRequirement"
 			})
 			if required and required <= level and required > bestLevel then
-				local targetName = obj:GetAttribute("Target")
+				local target = obj:GetAttribute("Target")
 					or obj:GetAttribute("Mob")
 					or obj:GetAttribute("Enemy")
 					or obj:GetAttribute("TargetName")
-				if typeof(targetName) == "string" and targetName ~= "" then
-					bestQuest = obj
-					bestLevel = required
-					break
-				end
-				local target = obj:FindFirstChild("Target") or obj:FindFirstChild("Mob")
-					or obj:FindFirstChild("Enemy") or obj:FindFirstChild("TargetName")
-				if target and target:IsA("StringValue") and target.Value ~= "" then
-					bestQuest = obj
-					bestLevel = required
-					break
+				if typeof(target) == "string" and target ~= "" then
+					bestQuest,bestLevel,bestTarget = obj,required,target
+				else
+					for _,name in ipairs({"Target","Mob","Enemy","TargetName"}) do
+						local value = obj:FindFirstChild(name)
+						if value and value:IsA("StringValue") and value.Value ~= "" then
+							bestQuest,bestLevel,bestTarget = obj,required,value.Value
+							break
+						end
+					end
 				end
 			end
 		end
 	end
-	if not bestQuest then
-		return nil, nil, "Không tìm thấy quest phù hợp"
-	end
-	local targetName = bestQuest:GetAttribute("Target")
-		or bestQuest:GetAttribute("Mob")
-		or bestQuest:GetAttribute("Enemy")
-		or bestQuest:GetAttribute("TargetName")
-	if not targetName then
-		for _,name in ipairs({"Target","Mob","Enemy","TargetName"}) do
-			local value = bestQuest:FindFirstChild(name)
-			if value and value:IsA("StringValue") then
-				targetName = value.Value
-				break
-			end
-		end
-	end
-	return bestQuest, targetName, "Quest level " .. tostring(bestLevel)
+	if not bestQuest then return nil,nil,"Không tìm thấy quest phù hợp" end
+	return bestQuest,bestTarget,"Quest Lv." .. tostring(bestLevel)
 end
 
 local function findNearestMob(targetName)
-	if not targetName then
-		return nil
-	end
 	local char = player.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then
-		return nil
-	end
+	if not hrp or not targetName then return nil end
 	local nearest
 	local nearestDistance = math.huge
 	for _,obj in ipairs(workspace:GetDescendants()) do
@@ -438,8 +318,7 @@ local function findNearestMob(targetName)
 			if humanoid and root and humanoid.Health > 0 then
 				local distance = (root.Position - hrp.Position).Magnitude
 				if distance < nearestDistance then
-					nearest = obj
-					nearestDistance = distance
+					nearest,nearestDistance = obj,distance
 				end
 			end
 		end
@@ -447,134 +326,62 @@ local function findNearestMob(targetName)
 	return nearest
 end
 
-local farmHeight = 12
-local farmRadius = 45
-local attackDelay = 0.12
-local farmAttackMode = "Both" -- "Melee", "Sword", "Both"
-
 local function getEquippedTool()
 	local char = player.Character
-	if not char then
-		return nil
-	end
+	if not char then return nil end
 	for _,obj in ipairs(char:GetChildren()) do
-		if obj:IsA("Tool") then
-			return obj
-		end
+		if obj:IsA("Tool") then return obj end
 	end
 	return nil
 end
 
-local function toolLooksLikeSword(tool)
-	if not tool then
-		return false
-	end
+local function isSword(tool)
+	if not tool then return false end
 	local name = string.lower(tool.Name)
-	return string.find(name, "sword", 1, true) ~= nil
-		or string.find(name, "katana", 1, true) ~= nil
-		or string.find(name, "blade", 1, true) ~= nil
+	return string.find(name,"sword",1,true) ~= nil
+		or string.find(name,"katana",1,true) ~= nil
+		or string.find(name,"blade",1,true) ~= nil
 end
 
-local function attackWithEquippedTool()
+local function attack()
 	local tool = getEquippedTool()
-	if not tool then
-		return
-	end
-	local isSword = toolLooksLikeSword(tool)
-	if farmAttackMode == "Melee" and isSword then
-		return
-	end
-	if farmAttackMode == "Sword" and not isSword then
-		return
-	end
+	if not tool then return end
+	local sword = isSword(tool)
+	if farmAttackMode == "Melee" and sword then return end
+	if farmAttackMode == "Sword" and not sword then return end
 	pcall(function()
 		tool:Activate()
 	end)
 end
 
-local function findNearestMobInRadius(targetName, radius)
-	local char = player.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp or not targetName then
-		return nil
-	end
-	local nearest
-	local nearestDistance = radius or math.huge
-	for _,obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name == targetName then
-			local humanoid = obj:FindFirstChildOfClass("Humanoid")
-			local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
-			if humanoid and root and humanoid.Health > 0 then
-				local distance = (root.Position - hrp.Position).Magnitude
-				if distance <= nearestDistance then
-					nearest = obj
-					nearestDistance = distance
-				end
-			end
-		end
-	end
-	return nearest
-end
-
 local function farmStep()
-	if not farmOn or farmBusy then
-		return
-	end
+	if not farmOn or farmBusy then return end
 	farmBusy = true
-	local quest, targetName, status = findBestQuest()
+	local quest,targetName,status = findBestQuest()
 	if not quest then
 		farmStatus.Text = "Status: " .. status
 		farmBusy = false
 		return
 	end
-	local mob = findNearestMobInRadius(targetName, farmRadius)
-	if not mob then
-		mob = findNearestMob(targetName)
-	end
+	local mob = findNearestMob(targetName)
 	local char = player.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if mob and hrp then
 		local root = mob:FindFirstChild("HumanoidRootPart") or mob.PrimaryPart
 		local humanoid = mob:FindFirstChildOfClass("Humanoid")
 		if root and humanoid and humanoid.Health > 0 then
-			hrp.CFrame = root.CFrame * CFrame.new(0, farmHeight, 0)
-			farmStatus.Text =
-				"Status: " .. status ..
+			hrp.CFrame = root.CFrame * CFrame.new(0,farmHeight,0)
+			farmStatus.Text = "Status: " .. status ..
 				"\nTarget: " .. tostring(targetName) ..
 				"\nHP: " .. math.floor(humanoid.Health) ..
 				"/" .. math.floor(humanoid.MaxHealth)
-			attackWithEquippedTool()
+			attack()
 		end
 	else
 		farmStatus.Text = "Status: Không tìm thấy mob: " .. tostring(targetName)
 	end
 	farmBusy = false
 end
-
-local modeButton = Instance.new("TextButton")
-modeButton.Size = UDim2.new(0,290,0,36)
-modeButton.Position = UDim2.new(0,0,0,195)
-modeButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
-modeButton.Text = "ATTACK: BOTH"
-modeButton.TextColor3 = Color3.fromRGB(255,255,255)
-modeButton.TextSize = 13
-modeButton.Font = Enum.Font.GothamBold
-modeButton.Parent = farmPage
-
-local modeCorner = Instance.new("UICorner")
-modeCorner.CornerRadius = UDim.new(0,9)
-modeCorner.Parent = modeButton
-
-modeButton.MouseButton1Click:Connect(function()
-	if farmAttackMode == "Both" then
-		farmAttackMode = "Melee"
-	elseif farmAttackMode == "Melee" then
-		farmAttackMode = "Sword"
-	else
-		farmAttackMode = "Both"
-	end
-	modeButton.Text = "ATTACK: " .. string.upper(farmAttackMode)
-end)
 
 farmButton.MouseButton1Click:Connect(function()
 	farmOn = not farmOn
@@ -589,11 +396,20 @@ farmButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+attackButton.MouseButton1Click:Connect(function()
+	if farmAttackMode == "Both" then
+		farmAttackMode = "Melee"
+	elseif farmAttackMode == "Melee" then
+		farmAttackMode = "Sword"
+	else
+		farmAttackMode = "Both"
+	end
+	attackButton.Text = "ATTACK: " .. string.upper(farmAttackMode)
+end)
+
 task.spawn(function()
 	while gui.Parent do
-		if farmOn then
-			farmStep()
-		end
+		if farmOn then farmStep() end
 		task.wait(attackDelay)
 	end
 end)
@@ -732,13 +548,7 @@ if player.Character then
 	setupCharacter(player.Character)
 end
 
-player.CharacterAdded:Connect(function(char)
-	setupCharacter(char)
-	if espOn then
-		task.wait(0.2)
-		updateESP()
-	end
-end)
+player.CharacterAdded:Connect(setupCharacter)
 
 connection = run.RenderStepped:Connect(function()
 	if not flying then
@@ -848,8 +658,6 @@ end)
 yes.MouseButton1Click:Connect(function()
 	flying = false
 	farmOn = false
-	espOn = false
-	clearESP()
 	local char = player.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if hrp then
