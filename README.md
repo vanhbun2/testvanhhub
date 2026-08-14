@@ -8,7 +8,7 @@ local jumpOn=false
 local espOn=false
 local farmOn=false
 local flySpeed=60
-local walkSpeed=35
+local walkSpeed=50
 local jumpPower=50
 local connection
 local gui=Instance.new("ScreenGui")
@@ -265,15 +265,36 @@ end)
 speedButton.MouseButton1Click:Connect(function()
 	speedOn=not speedOn
 	local char=player.Character
+	local hrp=char and char:FindFirstChild("HumanoidRootPart")
 	local humanoid=char and char:FindFirstChildOfClass("Humanoid")
 	if speedOn then
 		speedButton.Text="SPEED ON"
 		speedButton.BackgroundColor3=Color3.fromRGB(45,170,90)
 		if humanoid then humanoid.WalkSpeed=walkSpeed end
+		if hrp then
+			local bv=hrp:FindFirstChild("SpeedVel")
+			if not bv then
+				bv=Instance.new("BodyVelocity")
+				bv.Name="SpeedVel"
+				bv.MaxForce=Vector3.new(math.huge,0,math.huge)
+				bv.Parent=hrp
+			end
+			task.spawn(function()
+				while speedOn and hrp and hrp.Parent do
+					bv.Velocity=hrp.CFrame.LookVector*(walkSpeed-16)
+					task.wait(0.01)
+				end
+				if bv then bv:Destroy() end
+			end)
+		end
 	else
 		speedButton.Text="SPEED OFF"
 		speedButton.BackgroundColor3=Color3.fromRGB(90,90,100)
 		if humanoid then humanoid.WalkSpeed=16 end
+		if hrp then
+			local bv=hrp:FindFirstChild("SpeedVel")
+			if bv then bv:Destroy() end
+		end
 	end
 end)
 jumpButton.MouseButton1Click:Connect(function()
@@ -477,6 +498,8 @@ yes.MouseButton1Click:Connect(function()
 	if hrp then
 		local bv=hrp:FindFirstChild("FlyVelocity")
 		if bv then bv:Destroy() end
+		local sv=hrp:FindFirstChild("SpeedVel")
+		if sv then sv:Destroy() end
 	end
 	if connection then
 		connection:Disconnect()
