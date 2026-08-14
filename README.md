@@ -5,8 +5,6 @@ local run = game:GetService("RunService")
 local flying = false
 local speedOn = false
 local jumpOn = false
-local noclipOn = false
-local savedCollision = {}
 
 local flySpeed = 60
 local walkSpeed = 16
@@ -161,47 +159,13 @@ local speedBox = createBox(walkSpeed,55)
 local jumpButton = createButton("JUMP OFF",110,Color3.fromRGB(90,90,100))
 local jumpBox = createBox(jumpPower,110)
 
-local noclipButton = createButton("WALL OFF",165,Color3.fromRGB(90,90,100))
-
-local noclipText = Instance.new("TextLabel")
-noclipText.Size = UDim2.new(0,100,0,20)
-noclipText.Position = UDim2.new(0,0,0,200)
-noclipText.BackgroundTransparency = 1
-noclipText.Text = "Đi xuyên tường"
-noclipText.TextColor3 = Color3.fromRGB(150,150,160)
-noclipText.TextSize = 11
-noclipText.Font = Enum.Font.Gotham
-noclipText.Parent = settingsPage
-
-local function setWallMode(enabled)
-	local char = player.Character
-	if not char then
-		return
-	end
-	if enabled then
-		savedCollision = {}
-		for _,v in ipairs(char:GetDescendants()) do
-			if v:IsA("BasePart") then
-				savedCollision[v] = v.CanCollide
-				v.CanCollide = false
-			end
-		end
-	else
-		for part,state in pairs(savedCollision) do
-			if part and part.Parent then
-				part.CanCollide = state
-			end
-		end
-		savedCollision = {}
-	end
-end
-
 local espOn = false
-local espButton = createButton("ESP OFF",220,Color3.fromRGB(90,90,100))
+
+local espButton = createButton("ESP OFF",165,Color3.fromRGB(90,90,100))
 
 local espText = Instance.new("TextLabel")
 espText.Size = UDim2.new(0,100,0,20)
-espText.Position = UDim2.new(0,0,0,255)
+espText.Position = UDim2.new(0,0,0,200)
 espText.BackgroundTransparency = 1
 espText.Text = "ESP Player"
 espText.TextColor3 = Color3.fromRGB(150,150,160)
@@ -240,7 +204,7 @@ local function updateESP()
 					local billboard = Instance.new("BillboardGui")
 					billboard.Name = target.Name .. "_Info"
 					billboard.Adornee = head
-					billboard.Size = UDim2.new(0,220,0,55)
+					billboard.Size = UDim2.new(0,240,0,55)
 					billboard.StudsOffset = Vector3.new(0,3,0)
 					billboard.AlwaysOnTop = true
 					billboard.Parent = espFolder
@@ -249,7 +213,6 @@ local function updateESP()
 					info.BackgroundTransparency = 1
 					info.TextColor3 = Color3.fromRGB(255,255,255)
 					info.TextStrokeTransparency = 0
-					info.TextScaled = false
 					info.TextSize = 14
 					info.Font = Enum.Font.GothamBold
 					info.Text = target.DisplayName .. " [" .. target.Name .. "]\nHP: " ..
@@ -274,11 +237,13 @@ espButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-game.Players.PlayerAdded:Connect(function()
-	if espOn then
-		task.wait(0.5)
-		updateESP()
-	end
+game.Players.PlayerAdded:Connect(function(target)
+	target.CharacterAdded:Connect(function()
+		if espOn then
+			task.wait(0.3)
+			updateESP()
+		end
+	end)
 end)
 
 game.Players.PlayerRemoving:Connect(function()
@@ -295,7 +260,6 @@ task.spawn(function()
 		task.wait(0.25)
 	end
 end)
-
 
 local flyText = Instance.new("TextLabel")
 flyText.Size = UDim2.new(0,100,0,20)
@@ -393,17 +357,6 @@ speedButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-noclipButton.MouseButton1Click:Connect(function()
-	noclipOn = not noclipOn
-	if noclipOn then
-		noclipButton.Text = "WALL ON"
-		noclipButton.BackgroundColor3 = Color3.fromRGB(45,170,90)
-	else
-		noclipButton.Text = "WALL OFF"
-		noclipButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
-	end
-end)
-
 jumpButton.MouseButton1Click:Connect(function()
 	jumpOn = not jumpOn
 	local char = player.Character
@@ -484,23 +437,10 @@ end
 
 player.CharacterAdded:Connect(function(char)
 	setupCharacter(char)
-	if noclipOn then
-		task.wait(0.1)
-		setWallMode(true)
-	end
 	if espOn then
 		task.wait(0.2)
 		updateESP()
 	end
-end)
-
-game.Players.PlayerAdded:Connect(function(target)
-	target.CharacterAdded:Connect(function()
-		if espOn then
-			task.wait(0.2)
-			updateESP()
-		end
-	end)
 end)
 
 connection = run.RenderStepped:Connect(function()
@@ -511,13 +451,6 @@ connection = run.RenderStepped:Connect(function()
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then
 		return
-	end
-	if noclipOn and char then
-		for _,v in ipairs(char:GetDescendants()) do
-			if v:IsA("BasePart") then
-				v.CanCollide = false
-			end
-		end
 	end
 	local bv = hrp:FindFirstChild("FlyVelocity")
 	if not bv then
@@ -617,10 +550,6 @@ end)
 
 yes.MouseButton1Click:Connect(function()
 	flying = false
-	if noclipOn then
-		noclipOn = false
-		setWallMode(false)
-	end
 	espOn = false
 	clearESP()
 	local char = player.Character
