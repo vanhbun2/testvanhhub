@@ -5,6 +5,7 @@ local run = game:GetService("RunService")
 local flying = false
 local speedOn = false
 local jumpOn = false
+local noclipOn = false
 
 local flySpeed = 60
 local walkSpeed = 16
@@ -32,7 +33,7 @@ openCorner.CornerRadius = UDim.new(0,10)
 openCorner.Parent = open
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,330,0,330)
+frame.Size = UDim2.new(0,330,0,390)
 frame.Position = UDim2.new(0.5,-165,0.5,-165)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,25)
 frame.Visible = false
@@ -159,6 +160,18 @@ local speedBox = createBox(walkSpeed,55)
 local jumpButton = createButton("JUMP OFF",110,Color3.fromRGB(90,90,100))
 local jumpBox = createBox(jumpPower,110)
 
+local noclipButton = createButton("NOCLIP OFF",165,Color3.fromRGB(90,90,100))
+
+local noclipText = Instance.new("TextLabel")
+noclipText.Size = UDim2.new(0,100,0,20)
+noclipText.Position = UDim2.new(0,0,0,200)
+noclipText.BackgroundTransparency = 1
+noclipText.Text = "No Clip"
+noclipText.TextColor3 = Color3.fromRGB(150,150,160)
+noclipText.TextSize = 11
+noclipText.Font = Enum.Font.Gotham
+noclipText.Parent = settingsPage
+
 local flyText = Instance.new("TextLabel")
 flyText.Size = UDim2.new(0,100,0,20)
 flyText.Position = UDim2.new(0,0,0,35)
@@ -255,6 +268,17 @@ speedButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+noclipButton.MouseButton1Click:Connect(function()
+	noclipOn = not noclipOn
+	if noclipOn then
+		noclipButton.Text = "NOCLIP ON"
+		noclipButton.BackgroundColor3 = Color3.fromRGB(45,170,90)
+	else
+		noclipButton.Text = "NOCLIP OFF"
+		noclipButton.BackgroundColor3 = Color3.fromRGB(90,90,100)
+	end
+end)
+
 jumpButton.MouseButton1Click:Connect(function()
 	jumpOn = not jumpOn
 	local char = player.Character
@@ -343,6 +367,13 @@ connection = run.RenderStepped:Connect(function()
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then
 		return
+	end
+	if noclipOn and char then
+		for _,v in ipairs(char:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = false
+			end
+		end
 	end
 	local bv = hrp:FindFirstChild("FlyVelocity")
 	if not bv then
@@ -442,6 +473,7 @@ end)
 
 yes.MouseButton1Click:Connect(function()
 	flying = false
+	noclipOn = false
 	local char = player.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if hrp then
