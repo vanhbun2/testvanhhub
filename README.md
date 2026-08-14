@@ -7,6 +7,7 @@ local flying=false
 local speedOn=false
 local jumpOn=false
 local espOn=false
+local aimOn=false
 
 local flySpeed=60
 local walkSpeed=60
@@ -220,7 +221,29 @@ local function updateESP()
 	end
 end
 
-local aimOn=false
+local function getNearestPlayer()
+	local char=player.Character
+	local hrp=char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		return nil
+	end
+	local nearest=nil
+	local nearestDistance=math.huge
+	for _,target in ipairs(players:GetPlayers()) do
+		if target~=player and target.Character then
+			local targetHrp=target.Character:FindFirstChild("HumanoidRootPart")
+			local humanoid=target.Character:FindFirstChildOfClass("Humanoid")
+			if targetHrp and humanoid and humanoid.Health>0 then
+				local distance=(targetHrp.Position-hrp.Position).Magnitude
+				if distance<nearestDistance then
+					nearestDistance=distance
+					nearest=target
+				end
+			end
+		end
+	end
+	return nearest
+end
 
 local aimTitle=Instance.new("TextLabel")
 aimTitle.Size=UDim2.new(1,0,0,30)
@@ -236,7 +259,7 @@ local aimStatus=Instance.new("TextLabel")
 aimStatus.Size=UDim2.new(0,290,0,100)
 aimStatus.Position=UDim2.new(0,0,0,45)
 aimStatus.BackgroundTransparency=1
-aimStatus.Text="Status: OFF"
+aimStatus.Text="Status: OFF\nSkill keys: Z X C V"
 aimStatus.TextColor3=Color3.fromRGB(180,180,190)
 aimStatus.TextSize=12
 aimStatus.Font=Enum.Font.Gotham
@@ -263,12 +286,41 @@ aimButton.MouseButton1Click:Connect(function()
 	if aimOn then
 		aimButton.Text="AIM ON"
 		aimButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-		aimStatus.Text="Status: AIM ON"
+		aimStatus.Text="Status: AIM ON\nSkill keys: Z X C V"
 	else
 		aimButton.Text="AIM OFF"
 		aimButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-		aimStatus.Text="Status: OFF"
+		aimStatus.Text="Status: OFF\nSkill keys: Z X C V"
 	end
+end)
+
+uis.InputBegan:Connect(function(input,processed)
+	if processed or not aimOn then
+		return
+	end
+	local key=input.KeyCode
+	if key~=Enum.KeyCode.Z
+		and key~=Enum.KeyCode.X
+		and key~=Enum.KeyCode.C
+		and key~=Enum.KeyCode.V then
+		return
+	end
+	local target=getNearestPlayer()
+	if not target then
+		return
+	end
+	local targetHrp=target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+	if not targetHrp then
+		return
+	end
+	local camera=workspace.CurrentCamera
+	if camera then
+		camera.CFrame=CFrame.lookAt(
+			camera.CFrame.Position,
+			targetHrp.Position
+		)
+	end
+	aimStatus.Text="Target: "..target.DisplayName.."\nSkill: "..key.Name
 end)
 
 espButton.MouseButton1Click:Connect(function()
