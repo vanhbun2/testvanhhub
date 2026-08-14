@@ -2,13 +2,15 @@ local player=game.Players.LocalPlayer
 local uis=game:GetService("UserInputService")
 local run=game:GetService("RunService")
 local players=game:GetService("Players")
+local rs=game:GetService("ReplicatedStorage")
 local flying=false
 local speedOn=false
 local jumpOn=false
 local espOn=false
 local farmOn=false
+local autoAttackOn=false
 local flySpeed=60
-local walkSpeed=50
+local walkSpeed=60
 local jumpPower=50
 local connection
 local gui=Instance.new("ScreenGui")
@@ -28,8 +30,8 @@ local openCorner=Instance.new("UICorner")
 openCorner.CornerRadius=UDim.new(0,10)
 openCorner.Parent=open
 local frame=Instance.new("Frame")
-frame.Size=UDim2.new(0,330,0,410)
-frame.Position=UDim2.new(0.5,-165,0.5,-205)
+frame.Size=UDim2.new(0,330,0,500)
+frame.Position=UDim2.new(0.5,-165,0.5,-250)
 frame.BackgroundColor3=Color3.fromRGB(20,20,25)
 frame.Visible=false
 frame.Parent=gui
@@ -47,7 +49,7 @@ local title=Instance.new("TextLabel")
 title.Size=UDim2.new(1,-100,1,0)
 title.Position=UDim2.new(0,18,0,0)
 title.BackgroundTransparency=1
-title.Text="VANH"
+title.Text="VANH BLOX FRUIT"
 title.TextColor3=Color3.fromRGB(255,255,255)
 title.TextSize=22
 title.Font=Enum.Font.GothamBold
@@ -198,23 +200,30 @@ local function updateESP()
 		makeESP(target)
 	end
 end
-local function farmLogic()
-	if not farmOn then return end
+local function autoAttack()
+	if not autoAttackOn then return end
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-	local enemies=workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("NPCSpawner")
+	local enemies=workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("NPCSpawner") or workspace
 	if not enemies then return end
 	for _,enemy in ipairs(enemies:GetChildren()) do
-		local eHrp=enemy:FindFirstChild("HumanoidRootPart")
-		local eHm=enemy:FindFirstChildOfClass("Humanoid")
-		if eHrp and eHm and eHm.Health>0 then
-			if (eHrp.Position-hrp.Position).Magnitude<100 then
-				hrp.CFrame=eHrp.CFrame+eHrp.CFrame.LookVector*5
-				pcall(function()
-					game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):FindFirstChild("Attack"):FireServer()
-				end)
-				task.wait(0.3)
+		if enemy:IsA("Model") then
+			local eHrp=enemy:FindFirstChild("HumanoidRootPart")
+			local eHm=enemy:FindFirstChildOfClass("Humanoid")
+			if eHrp and eHm and eHm.Health>0 then
+				local dist=(eHrp.Position-hrp.Position).Magnitude
+				if dist<150 then
+					hrp.CFrame=eHrp.CFrame+eHrp.CFrame.LookVector*3
+					pcall(function()
+						local attackRemote=rs:WaitForChild("Remotes"):FindFirstChild("Attack")
+						if attackRemote then
+							attackRemote:FireServer()
+						end
+					end)
+					task.wait(0.2)
+					return
+				end
 			end
 		end
 	end
@@ -277,11 +286,16 @@ speedButton.MouseButton1Click:Connect(function()
 				bv=Instance.new("BodyVelocity")
 				bv.Name="SpeedVel"
 				bv.MaxForce=Vector3.new(math.huge,0,math.huge)
+				bv.Velocity=Vector3.zero
 				bv.Parent=hrp
 			end
 			task.spawn(function()
 				while speedOn and hrp and hrp.Parent do
-					bv.Velocity=hrp.CFrame.LookVector*(walkSpeed-16)
+					if humanoid and humanoid.MoveDirection.Magnitude>0 then
+						bv.Velocity=humanoid.MoveDirection*(walkSpeed-16)
+					else
+						bv.Velocity=Vector3.zero
+					end
 					task.wait(0.01)
 				end
 				if bv then bv:Destroy() end
@@ -422,8 +436,8 @@ local farmButtonCorner=Instance.new("UICorner")
 farmButtonCorner.CornerRadius=UDim.new(0,9)
 farmButtonCorner.Parent=farmButton
 farmButton.MouseButton1Click:Connect(function()
-	farmOn=not farmOn
-	if farmOn then
+	autoAttackOn=not autoAttackOn
+	if autoAttackOn then
 		farmButton.Text="FARM ON"
 		farmButton.BackgroundColor3=Color3.fromRGB(45,170,90)
 		farmStatus.Text="Status: FARMING..."
@@ -491,7 +505,7 @@ yes.MouseButton1Click:Connect(function()
 	speedOn=false
 	jumpOn=false
 	espOn=false
-	farmOn=false
+	autoAttackOn=false
 	clearESP()
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
@@ -576,7 +590,7 @@ task.spawn(function()
 end)
 task.spawn(function()
 	while gui.Parent do
-		farmLogic()
-		task.wait(0.5)
+		autoAttack()
+		task.wait(0.1)
 	end
 end)
