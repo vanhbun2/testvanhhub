@@ -7,7 +7,6 @@ local flying=false
 local speedOn=false
 local jumpOn=false
 local espOn=false
-local farmOn=false
 local autoAttackOn=false
 local flySpeed=60
 local walkSpeed=60
@@ -30,8 +29,8 @@ local openCorner=Instance.new("UICorner")
 openCorner.CornerRadius=UDim.new(0,10)
 openCorner.Parent=open
 local frame=Instance.new("Frame")
-frame.Size=UDim2.new(0,330,0,500)
-frame.Position=UDim2.new(0.5,-165,0.5,-250)
+frame.Size=UDim2.new(0,330,0,400)
+frame.Position=UDim2.new(0.5,-165,0.5,-200)
 frame.BackgroundColor3=Color3.fromRGB(20,20,25)
 frame.Visible=false
 frame.Parent=gui
@@ -102,7 +101,7 @@ farmPage.Position=UDim2.new(0,20,0,120)
 farmPage.BackgroundTransparency=1
 farmPage.Visible=false
 farmPage.Parent=frame
-local function createButton(text,y)
+local function mkBtn(text,y)
 	local button=Instance.new("TextButton")
 	button.Size=UDim2.new(0,100,0,38)
 	button.Position=UDim2.new(0,0,0,y)
@@ -117,7 +116,7 @@ local function createButton(text,y)
 	corner.Parent=button
 	return button
 end
-local function createBox(value,y)
+local function mkBox(value,y)
 	local box=Instance.new("TextBox")
 	box.Size=UDim2.new(0,165,0,38)
 	box.Position=UDim2.new(0,125,0,y)
@@ -133,14 +132,7 @@ local function createBox(value,y)
 	corner.Parent=box
 	return box
 end
-local flyButton=createButton("FLY OFF",0)
-local flyBox=createBox(flySpeed,0)
-local speedButton=createButton("SPEED OFF",55)
-local speedBox=createBox(walkSpeed,55)
-local jumpButton=createButton("JUMP OFF",110)
-local jumpBox=createBox(jumpPower,110)
-local espButton=createButton("ESP OFF",165)
-local function addText(text,y)
+local function mkLbl(text,y)
 	local label=Instance.new("TextLabel")
 	label.Size=UDim2.new(0,100,0,20)
 	label.Position=UDim2.new(0,0,0,y)
@@ -151,10 +143,17 @@ local function addText(text,y)
 	label.Font=Enum.Font.Gotham
 	label.Parent=settingsPage
 end
-addText("Fly Speed",35)
-addText("Walk Speed",90)
-addText("Jump Power",145)
-addText("ESP Player",200)
+local flyButton=mkBtn("FLY OFF",0)
+local flyBox=mkBox(flySpeed,0)
+local speedButton=mkBtn("SPEED OFF",55)
+local speedBox=mkBox(walkSpeed,55)
+local jumpButton=mkBtn("JUMP OFF",110)
+local jumpBox=mkBox(jumpPower,110)
+local espButton=mkBtn("ESP OFF",165)
+mkLbl("Fly Speed",35)
+mkLbl("Walk Speed",90)
+mkLbl("Jump Power",145)
+mkLbl("ESP",200)
 local espFolder=Instance.new("Folder")
 espFolder.Name="VanhESP"
 espFolder.Parent=gui
@@ -163,7 +162,7 @@ local function clearESP()
 		obj:Destroy()
 	end
 end
-local function makeESP(target)
+local function mkESP(target)
 	if not espOn or target==player then return end
 	local char=target.Character
 	if not char then return end
@@ -189,41 +188,34 @@ local function makeESP(target)
 		info.TextStrokeTransparency=0
 		info.TextSize=14
 		info.Font=Enum.Font.GothamBold
-		info.Text=target.DisplayName.." ["..target.Name.."]\nHP: "..math.floor(humanoid.Health).."/"..math.floor(humanoid.MaxHealth)
+		info.Text=target.DisplayName.." HP: "..math.floor(humanoid.Health).."/"..math.floor(humanoid.MaxHealth)
 		info.Parent=billboard
 	end
 end
 local function updateESP()
 	clearESP()
 	if not espOn then return end
-	for _,target in ipairs(players:GetPlayers()) do
-		makeESP(target)
-	end
+	for _,target in ipairs(players:GetPlayers()) do mkESP(target) end
 end
 local function autoAttack()
 	if not autoAttackOn then return end
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-	local enemies=workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("NPCSpawner") or workspace
+	local enemies=workspace:FindFirstChild("Enemies") or workspace
 	if not enemies then return end
 	for _,enemy in ipairs(enemies:GetChildren()) do
 		if enemy:IsA("Model") then
 			local eHrp=enemy:FindFirstChild("HumanoidRootPart")
 			local eHm=enemy:FindFirstChildOfClass("Humanoid")
-			if eHrp and eHm and eHm.Health>0 then
-				local dist=(eHrp.Position-hrp.Position).Magnitude
-				if dist<150 then
-					hrp.CFrame=eHrp.CFrame+eHrp.CFrame.LookVector*3
-					pcall(function()
-						local attackRemote=rs:WaitForChild("Remotes"):FindFirstChild("Attack")
-						if attackRemote then
-							attackRemote:FireServer()
-						end
-					end)
-					task.wait(0.2)
-					return
-				end
+			if eHrp and eHm and eHm.Health>0 and (eHrp.Position-hrp.Position).Magnitude<150 then
+				hrp.CFrame=eHrp.CFrame+eHrp.CFrame.LookVector*3
+				pcall(function()
+					local attackRemote=rs:WaitForChild("Remotes"):FindFirstChild("Attack")
+					if attackRemote then attackRemote:FireServer() end
+				end)
+				task.wait(0.2)
+				return
 			end
 		end
 	end
@@ -333,11 +325,7 @@ jumpButton.MouseButton1Click:Connect(function()
 end)
 flyBox.FocusLost:Connect(function()
 	local value=tonumber(flyBox.Text)
-	if value and value>=1 then
-		flySpeed=value
-	else
-		flyBox.Text=tostring(flySpeed)
-	end
+	if value and value>=1 then flySpeed=value else flyBox.Text=tostring(flySpeed) end
 end)
 speedBox.FocusLost:Connect(function()
 	local value=tonumber(speedBox.Text)
@@ -407,7 +395,7 @@ local farmTitle=Instance.new("TextLabel")
 farmTitle.Size=UDim2.new(1,0,0,30)
 farmTitle.Position=UDim2.new(0,0,0,5)
 farmTitle.BackgroundTransparency=1
-farmTitle.Text="AUTO FARM • BLOX FRUIT"
+farmTitle.Text="AUTO FARM"
 farmTitle.TextColor3=Color3.fromRGB(150,150,160)
 farmTitle.TextSize=16
 farmTitle.Font=Enum.Font.GothamBold
@@ -461,7 +449,7 @@ local question=Instance.new("TextLabel")
 question.Size=UDim2.new(1,-20,0,65)
 question.Position=UDim2.new(0,10,0,10)
 question.BackgroundTransparency=1
-question.Text="Bạn có xác định tắt script?"
+question.Text="Tắt script?"
 question.TextColor3=Color3.fromRGB(255,255,255)
 question.TextSize=16
 question.Font=Enum.Font.GothamBold
