@@ -187,18 +187,17 @@ local function autoAttack()
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-	local enemies=workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("NPCSpawner") or workspace
-	for _,enemy in ipairs(enemies:GetChildren()) do
-		if enemy:IsA("Model") then
-			local eHrp=enemy:FindFirstChild("HumanoidRootPart")
-			local eHm=enemy:FindFirstChildOfClass("Humanoid")
-			if eHrp and eHm and eHm.Health>0 and (eHrp.Position-hrp.Position).Magnitude<150 then
-				hrp.CFrame=eHrp.CFrame+eHrp.CFrame.LookVector*3
+	local farm=workspace:FindFirstChild("NPCSpawner") or workspace:FindFirstChild("Enemies") or workspace
+	if not farm then return end
+	for _,npc in ipairs(farm:GetChildren()) do
+		if npc:FindFirstChild("Humanoid") then
+			local npcHrp=npc:FindFirstChild("HumanoidRootPart")
+			if npcHrp and (npcHrp.Position-hrp.Position).Magnitude<50 then
+				hrp.CFrame=npcHrp.CFrame+npcHrp.CFrame.LookVector*3
 				pcall(function()
-					rs:WaitForChild("Remotes"):FindFirstChild("Attack"):FireServer()
+					game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):FindFirstChild("Attack"):FireServer()
 				end)
-				task.wait(0.2)
-				return
+				task.wait(0.5)
 			end
 		end
 	end
@@ -339,7 +338,7 @@ local farmTitle=Instance.new("TextLabel")
 farmTitle.Size=UDim2.new(1,0,0,30)
 farmTitle.Position=UDim2.new(0,0,0,5)
 farmTitle.BackgroundTransparency=1
-farmTitle.Text="AUTO FARM"
+farmTitle.Text="AUTO FARM • NPC"
 farmTitle.TextColor3=Color3.fromRGB(150,150,160)
 farmTitle.TextSize=16
 farmTitle.Font=Enum.Font.GothamBold
@@ -557,6 +556,6 @@ end)
 task.spawn(function()
 	while gui.Parent do
 		autoAttack()
-		task.wait(0.1)
+		task.wait(0.5)
 	end
 end)
