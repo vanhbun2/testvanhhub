@@ -202,12 +202,37 @@ local function updateESP()
 	end
 	for _,target in ipairs(game.Players:GetPlayers()) do
 		if target ~= player and target.Character then
-			local highlight = Instance.new("Highlight")
-			highlight.Name = target.Name
-			highlight.Adornee = target.Character
-			highlight.FillTransparency = 0.65
-			highlight.OutlineTransparency = 0
-			highlight.Parent = espFolder
+			local char = target.Character
+			local humanoid = char:FindFirstChildOfClass("Humanoid")
+			local head = char:FindFirstChild("Head")
+			if humanoid then
+				local highlight = Instance.new("Highlight")
+				highlight.Name = target.Name .. "_Highlight"
+				highlight.Adornee = char
+				highlight.FillTransparency = 0.65
+				highlight.OutlineTransparency = 0
+				highlight.Parent = espFolder
+				if head then
+					local billboard = Instance.new("BillboardGui")
+					billboard.Name = target.Name .. "_Info"
+					billboard.Adornee = head
+					billboard.Size = UDim2.new(0,220,0,55)
+					billboard.StudsOffset = Vector3.new(0,3,0)
+					billboard.AlwaysOnTop = true
+					billboard.Parent = espFolder
+					local info = Instance.new("TextLabel")
+					info.Size = UDim2.new(1,0,1,0)
+					info.BackgroundTransparency = 1
+					info.TextColor3 = Color3.fromRGB(255,255,255)
+					info.TextStrokeTransparency = 0
+					info.TextScaled = false
+					info.TextSize = 14
+					info.Font = Enum.Font.GothamBold
+					info.Text = target.DisplayName .. " [" .. target.Name .. "]\nHP: " ..
+						math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth)
+					info.Parent = billboard
+				end
+			end
 		end
 	end
 end
@@ -235,6 +260,15 @@ end)
 game.Players.PlayerRemoving:Connect(function()
 	if espOn then
 		updateESP()
+	end
+end)
+
+task.spawn(function()
+	while gui.Parent do
+		if espOn then
+			updateESP()
+		end
+		task.wait(0.25)
 	end
 end)
 
@@ -482,6 +516,21 @@ connection = run.RenderStepped:Connect(function()
 		bv.Velocity = move.Unit * flySpeed
 	else
 		bv.Velocity = Vector3.zero
+	end
+end)
+
+run.Stepped:Connect(function()
+	if not noclipOn then
+		return
+	end
+	local char = player.Character
+	if not char then
+		return
+	end
+	for _,v in ipairs(char:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.CanCollide = false
+		end
 	end
 end)
 
