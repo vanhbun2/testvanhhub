@@ -6,6 +6,7 @@ local flying = false
 local speedOn = false
 local jumpOn = false
 local noclipOn = false
+local savedCollision = {}
 
 local flySpeed = 60
 local walkSpeed = 16
@@ -171,6 +172,29 @@ noclipText.TextColor3 = Color3.fromRGB(150,150,160)
 noclipText.TextSize = 11
 noclipText.Font = Enum.Font.Gotham
 noclipText.Parent = settingsPage
+
+local function setWallMode(enabled)
+	local char = player.Character
+	if not char then
+		return
+	end
+	if enabled then
+		savedCollision = {}
+		for _,v in ipairs(char:GetDescendants()) do
+			if v:IsA("BasePart") then
+				savedCollision[v] = v.CanCollide
+				v.CanCollide = false
+			end
+		end
+	else
+		for part,state in pairs(savedCollision) do
+			if part and part.Parent then
+				part.CanCollide = state
+			end
+		end
+		savedCollision = {}
+	end
+end
 
 local espOn = false
 local espButton = createButton("ESP OFF",220,Color3.fromRGB(90,90,100))
@@ -458,7 +482,17 @@ if player.Character then
 	setupCharacter(player.Character)
 end
 
-player.CharacterAdded:Connect(setupCharacter)
+player.CharacterAdded:Connect(function(char)
+	setupCharacter(char)
+	if noclipOn then
+		task.wait(0.1)
+		setWallMode(true)
+	end
+	if espOn then
+		task.wait(0.2)
+		updateESP()
+	end
+end)
 
 game.Players.PlayerAdded:Connect(function(target)
 	target.CharacterAdded:Connect(function()
@@ -516,21 +550,6 @@ connection = run.RenderStepped:Connect(function()
 		bv.Velocity = move.Unit * flySpeed
 	else
 		bv.Velocity = Vector3.zero
-	end
-end)
-
-run.Stepped:Connect(function()
-	if not noclipOn then
-		return
-	end
-	local char = player.Character
-	if not char then
-		return
-	end
-	for _,v in ipairs(char:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.CanCollide = false
-		end
 	end
 end)
 
@@ -598,7 +617,10 @@ end)
 
 yes.MouseButton1Click:Connect(function()
 	flying = false
-	noclipOn = false
+	if noclipOn then
+		noclipOn = false
+		setWallMode(false)
+	end
 	espOn = false
 	clearESP()
 	local char = player.Character
