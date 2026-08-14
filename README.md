@@ -29,8 +29,8 @@ local openCorner=Instance.new("UICorner")
 openCorner.CornerRadius=UDim.new(0,10)
 openCorner.Parent=open
 local frame=Instance.new("Frame")
-frame.Size=UDim2.new(0,330,0,400)
-frame.Position=UDim2.new(0.5,-165,0.5,-200)
+frame.Size=UDim2.new(0,280,0,300)
+frame.Position=UDim2.new(0.5,-140,0.5,-150)
 frame.BackgroundColor3=Color3.fromRGB(20,20,25)
 frame.Visible=false
 frame.Parent=gui
@@ -38,25 +38,25 @@ local frameCorner=Instance.new("UICorner")
 frameCorner.CornerRadius=UDim.new(0,15)
 frameCorner.Parent=frame
 local top=Instance.new("Frame")
-top.Size=UDim2.new(1,0,0,55)
+top.Size=UDim2.new(1,0,0,50)
 top.BackgroundColor3=Color3.fromRGB(28,28,34)
 top.Parent=frame
 local topCorner=Instance.new("UICorner")
 topCorner.CornerRadius=UDim.new(0,15)
 topCorner.Parent=top
 local title=Instance.new("TextLabel")
-title.Size=UDim2.new(1,-100,1,0)
-title.Position=UDim2.new(0,18,0,0)
+title.Size=UDim2.new(1,-50,1,0)
+title.Position=UDim2.new(0,10,0,0)
 title.BackgroundTransparency=1
-title.Text="VANH BLOX FRUIT"
+title.Text="VANH"
 title.TextColor3=Color3.fromRGB(255,255,255)
-title.TextSize=22
+title.TextSize=20
 title.Font=Enum.Font.GothamBold
 title.TextXAlignment=Enum.TextXAlignment.Left
 title.Parent=top
 local close=Instance.new("TextButton")
 close.Size=UDim2.new(0,35,0,35)
-close.Position=UDim2.new(1,-45,0,10)
+close.Position=UDim2.new(1,-40,0,7.5)
 close.BackgroundColor3=Color3.fromRGB(180,55,55)
 close.Text="X"
 close.TextColor3=Color3.fromRGB(255,255,255)
@@ -66,51 +66,21 @@ close.Parent=top
 local closeCorner=Instance.new("UICorner")
 closeCorner.CornerRadius=UDim.new(0,9)
 closeCorner.Parent=close
-local settings=Instance.new("TextButton")
-settings.Size=UDim2.new(0,140,0,38)
-settings.Position=UDim2.new(0,20,0,70)
-settings.BackgroundColor3=Color3.fromRGB(55,55,65)
-settings.Text="SETTINGS"
-settings.TextColor3=Color3.fromRGB(255,255,255)
-settings.TextSize=14
-settings.Font=Enum.Font.GothamBold
-settings.Parent=frame
-local settingsCorner=Instance.new("UICorner")
-settingsCorner.CornerRadius=UDim.new(0,9)
-settingsCorner.Parent=settings
-local farm=Instance.new("TextButton")
-farm.Size=UDim2.new(0,140,0,38)
-farm.Position=UDim2.new(0,170,0,70)
-farm.BackgroundColor3=Color3.fromRGB(35,35,42)
-farm.Text="FARM"
-farm.TextColor3=Color3.fromRGB(180,180,190)
-farm.TextSize=14
-farm.Font=Enum.Font.GothamBold
-farm.Parent=frame
-local farmCorner=Instance.new("UICorner")
-farmCorner.CornerRadius=UDim.new(0,9)
-farmCorner.Parent=farm
-local settingsPage=Instance.new("Frame")
-settingsPage.Size=UDim2.new(1,-40,1,-125)
-settingsPage.Position=UDim2.new(0,20,0,120)
-settingsPage.BackgroundTransparency=1
-settingsPage.Parent=frame
-local farmPage=Instance.new("Frame")
-farmPage.Size=UDim2.new(1,-40,1,-125)
-farmPage.Position=UDim2.new(0,20,0,120)
-farmPage.BackgroundTransparency=1
-farmPage.Visible=false
-farmPage.Parent=frame
+local st=Instance.new("Frame")
+st.Size=UDim2.new(1,-20,1,-70)
+st.Position=UDim2.new(0,10,0,60)
+st.BackgroundTransparency=1
+st.Parent=frame
 local function mkBtn(text,y)
 	local button=Instance.new("TextButton")
-	button.Size=UDim2.new(0,100,0,38)
+	button.Size=UDim2.new(0,80,0,30)
 	button.Position=UDim2.new(0,0,0,y)
 	button.BackgroundColor3=Color3.fromRGB(90,90,100)
 	button.Text=text
 	button.TextColor3=Color3.fromRGB(255,255,255)
-	button.TextSize=12
+	button.TextSize=10
 	button.Font=Enum.Font.GothamBold
-	button.Parent=settingsPage
+	button.Parent=st
 	local corner=Instance.new("UICorner")
 	corner.CornerRadius=UDim.new(0,9)
 	corner.Parent=button
@@ -118,42 +88,26 @@ local function mkBtn(text,y)
 end
 local function mkBox(value,y)
 	local box=Instance.new("TextBox")
-	box.Size=UDim2.new(0,165,0,38)
-	box.Position=UDim2.new(0,125,0,y)
+	box.Size=UDim2.new(0,120,0,30)
+	box.Position=UDim2.new(0,95,0,y)
 	box.BackgroundColor3=Color3.fromRGB(35,35,42)
 	box.Text=tostring(value)
 	box.TextColor3=Color3.fromRGB(255,255,255)
-	box.TextSize=14
+	box.TextSize=12
 	box.Font=Enum.Font.Gotham
 	box.ClearTextOnFocus=false
-	box.Parent=settingsPage
+	box.Parent=st
 	local corner=Instance.new("UICorner")
 	corner.CornerRadius=UDim.new(0,9)
 	corner.Parent=box
 	return box
 end
-local function mkLbl(text,y)
-	local label=Instance.new("TextLabel")
-	label.Size=UDim2.new(0,100,0,20)
-	label.Position=UDim2.new(0,0,0,y)
-	label.BackgroundTransparency=1
-	label.Text=text
-	label.TextColor3=Color3.fromRGB(150,150,160)
-	label.TextSize=11
-	label.Font=Enum.Font.Gotham
-	label.Parent=settingsPage
-end
 local flyButton=mkBtn("FLY OFF",0)
 local flyBox=mkBox(flySpeed,0)
-local speedButton=mkBtn("SPEED OFF",55)
-local speedBox=mkBox(walkSpeed,55)
-local jumpButton=mkBtn("JUMP OFF",110)
-local jumpBox=mkBox(jumpPower,110)
-local espButton=mkBtn("ESP OFF",165)
-mkLbl("Fly Speed",35)
-mkLbl("Walk Speed",90)
-mkLbl("Jump Power",145)
-mkLbl("ESP",200)
+local speedButton=mkBtn("SPEED OFF",35)
+local speedBox=mkBox(walkSpeed,35)
+local jumpButton=mkBtn("JUMP OFF",70)
+local jumpBox=mkBox(jumpPower,70)
 local espFolder=Instance.new("Folder")
 espFolder.Name="VanhESP"
 espFolder.Parent=gui
@@ -177,7 +131,7 @@ local function mkESP(target)
 	if head then
 		local billboard=Instance.new("BillboardGui")
 		billboard.Adornee=head
-		billboard.Size=UDim2.new(0,250,0,55)
+		billboard.Size=UDim2.new(0,200,0,50)
 		billboard.StudsOffset=Vector3.new(0,3,0)
 		billboard.AlwaysOnTop=true
 		billboard.Parent=espFolder
@@ -186,9 +140,9 @@ local function mkESP(target)
 		info.BackgroundTransparency=1
 		info.TextColor3=Color3.fromRGB(255,255,255)
 		info.TextStrokeTransparency=0
-		info.TextSize=14
+		info.TextSize=12
 		info.Font=Enum.Font.GothamBold
-		info.Text=target.DisplayName.." HP: "..math.floor(humanoid.Health).."/"..math.floor(humanoid.MaxHealth)
+		info.Text=target.DisplayName.."\nHP: "..math.floor(humanoid.Health).."/"..math.floor(humanoid.MaxHealth)
 		info.Parent=billboard
 	end
 end
@@ -203,7 +157,6 @@ local function autoAttack()
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 	local enemies=workspace:FindFirstChild("Enemies") or workspace
-	if not enemies then return end
 	for _,enemy in ipairs(enemies:GetChildren()) do
 		if enemy:IsA("Model") then
 			local eHrp=enemy:FindFirstChild("HumanoidRootPart")
@@ -211,8 +164,7 @@ local function autoAttack()
 			if eHrp and eHm and eHm.Health>0 and (eHrp.Position-hrp.Position).Magnitude<150 then
 				hrp.CFrame=eHrp.CFrame+eHrp.CFrame.LookVector*3
 				pcall(function()
-					local attackRemote=rs:WaitForChild("Remotes"):FindFirstChild("Attack")
-					if attackRemote then attackRemote:FireServer() end
+					rs:WaitForChild("Remotes"):FindFirstChild("Attack"):FireServer()
 				end)
 				task.wait(0.2)
 				return
@@ -220,32 +172,8 @@ local function autoAttack()
 		end
 	end
 end
-espButton.MouseButton1Click:Connect(function()
-	espOn=not espOn
-	if espOn then
-		espButton.Text="ESP ON"
-		espButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-		updateESP()
-	else
-		espButton.Text="ESP OFF"
-		espButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-		clearESP()
-	end
-end)
 open.MouseButton1Click:Connect(function()
 	frame.Visible=not frame.Visible
-end)
-settings.MouseButton1Click:Connect(function()
-	settingsPage.Visible=true
-	farmPage.Visible=false
-	settings.BackgroundColor3=Color3.fromRGB(55,55,65)
-	farm.BackgroundColor3=Color3.fromRGB(35,35,42)
-end)
-farm.MouseButton1Click:Connect(function()
-	settingsPage.Visible=false
-	farmPage.Visible=true
-	settings.BackgroundColor3=Color3.fromRGB(35,35,42)
-	farm.BackgroundColor3=Color3.fromRGB(55,55,65)
 end)
 flyButton.MouseButton1Click:Connect(function()
 	flying=not flying
@@ -336,9 +264,7 @@ speedBox.FocusLost:Connect(function()
 			local humanoid=char and char:FindFirstChildOfClass("Humanoid")
 			if humanoid then humanoid.WalkSpeed=walkSpeed end
 		end
-	else
-		speedBox.Text=tostring(walkSpeed)
-	end
+	else speedBox.Text=tostring(walkSpeed) end
 end)
 jumpBox.FocusLost:Connect(function()
 	local value=tonumber(jumpBox.Text)
@@ -352,92 +278,57 @@ jumpBox.FocusLost:Connect(function()
 				humanoid.JumpPower=jumpPower
 			end
 		end
-	else
-		jumpBox.Text=tostring(jumpPower)
-	end
+	else jumpBox.Text=tostring(jumpPower) end
 end)
-local function setupCharacter(char)
-	local humanoid=char:WaitForChild("Humanoid")
-	if speedOn then humanoid.WalkSpeed=walkSpeed end
-	if jumpOn then
-		humanoid.UseJumpPower=true
-		humanoid.JumpPower=jumpPower
-	end
-end
-player.CharacterAdded:Connect(setupCharacter)
-connection=run.RenderStepped:Connect(function()
-	if not flying then return end
-	local char=player.Character
-	local hrp=char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	local bv=hrp:FindFirstChild("FlyVelocity")
-	if not bv then
-		bv=Instance.new("BodyVelocity")
-		bv.Name="FlyVelocity"
-		bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
-		bv.Parent=hrp
-	end
-	local cam=workspace.CurrentCamera
-	local move=Vector3.zero
-	if uis:IsKeyDown(Enum.KeyCode.W) then move+=cam.CFrame.LookVector end
-	if uis:IsKeyDown(Enum.KeyCode.S) then move-=cam.CFrame.LookVector end
-	if uis:IsKeyDown(Enum.KeyCode.A) then move-=cam.CFrame.RightVector end
-	if uis:IsKeyDown(Enum.KeyCode.D) then move+=cam.CFrame.RightVector end
-	if uis:IsKeyDown(Enum.KeyCode.Space) then move+=Vector3.new(0,1,0) end
-	if uis:IsKeyDown(Enum.KeyCode.LeftControl) then move-=Vector3.new(0,1,0) end
-	if move.Magnitude>0 then
-		bv.Velocity=move.Unit*flySpeed
-	else
-		bv.Velocity=Vector3.zero
-	end
-end)
-local farmTitle=Instance.new("TextLabel")
-farmTitle.Size=UDim2.new(1,0,0,30)
-farmTitle.Position=UDim2.new(0,0,0,5)
-farmTitle.BackgroundTransparency=1
-farmTitle.Text="AUTO FARM"
-farmTitle.TextColor3=Color3.fromRGB(150,150,160)
-farmTitle.TextSize=16
-farmTitle.Font=Enum.Font.GothamBold
-farmTitle.Parent=farmPage
-local farmStatus=Instance.new("TextLabel")
-farmStatus.Size=UDim2.new(0,290,0,100)
-farmStatus.Position=UDim2.new(0,0,0,45)
-farmStatus.BackgroundTransparency=1
-farmStatus.Text="Status: OFF"
-farmStatus.TextColor3=Color3.fromRGB(180,180,190)
-farmStatus.TextSize=12
-farmStatus.Font=Enum.Font.Gotham
-farmStatus.TextWrapped=true
-farmStatus.TextYAlignment=Enum.TextYAlignment.Top
-farmStatus.Parent=farmPage
+local espButton=Instance.new("TextButton")
+espButton.Size=UDim2.new(0,260,0,30)
+espButton.Position=UDim2.new(0,10,1,-40)
+espButton.BackgroundColor3=Color3.fromRGB(90,90,100)
+espButton.Text="ESP OFF"
+espButton.TextColor3=Color3.fromRGB(255,255,255)
+espButton.TextSize=12
+espButton.Font=Enum.Font.GothamBold
+espButton.Parent=frame
+local espCorner=Instance.new("UICorner")
+espCorner.CornerRadius=UDim.new(0,9)
+espCorner.Parent=espButton
 local farmButton=Instance.new("TextButton")
-farmButton.Size=UDim2.new(0,290,0,40)
-farmButton.Position=UDim2.new(0,0,0,155)
+farmButton.Size=UDim2.new(0,260,0,30)
+farmButton.Position=UDim2.new(0,10,1,-70)
 farmButton.BackgroundColor3=Color3.fromRGB(90,90,100)
 farmButton.Text="FARM OFF"
 farmButton.TextColor3=Color3.fromRGB(255,255,255)
-farmButton.TextSize=14
+farmButton.TextSize=12
 farmButton.Font=Enum.Font.GothamBold
-farmButton.Parent=farmPage
-local farmButtonCorner=Instance.new("UICorner")
-farmButtonCorner.CornerRadius=UDim.new(0,9)
-farmButtonCorner.Parent=farmButton
+farmButton.Parent=frame
+local farmCorner=Instance.new("UICorner")
+farmCorner.CornerRadius=UDim.new(0,9)
+farmCorner.Parent=farmButton
+espButton.MouseButton1Click:Connect(function()
+	espOn=not espOn
+	if espOn then
+		espButton.Text="ESP ON"
+		espButton.BackgroundColor3=Color3.fromRGB(45,170,90)
+		updateESP()
+	else
+		espButton.Text="ESP OFF"
+		espButton.BackgroundColor3=Color3.fromRGB(90,90,100)
+		clearESP()
+	end
+end)
 farmButton.MouseButton1Click:Connect(function()
 	autoAttackOn=not autoAttackOn
 	if autoAttackOn then
 		farmButton.Text="FARM ON"
 		farmButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-		farmStatus.Text="Status: FARMING..."
 	else
 		farmButton.Text="FARM OFF"
 		farmButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-		farmStatus.Text="Status: OFF"
 	end
 end)
 local confirm=Instance.new("Frame")
-confirm.Size=UDim2.new(0,280,0,145)
-confirm.Position=UDim2.new(0.5,-140,0.5,-72)
+confirm.Size=UDim2.new(0,250,0,120)
+confirm.Position=UDim2.new(0.5,-125,0.5,-60)
 confirm.BackgroundColor3=Color3.fromRGB(25,25,30)
 confirm.Visible=false
 confirm.ZIndex=10
@@ -446,19 +337,18 @@ local confirmCorner=Instance.new("UICorner")
 confirmCorner.CornerRadius=UDim.new(0,13)
 confirmCorner.Parent=confirm
 local question=Instance.new("TextLabel")
-question.Size=UDim2.new(1,-20,0,65)
-question.Position=UDim2.new(0,10,0,10)
+question.Size=UDim2.new(1,-10,0,50)
+question.Position=UDim2.new(0,5,0,5)
 question.BackgroundTransparency=1
 question.Text="Tắt script?"
 question.TextColor3=Color3.fromRGB(255,255,255)
 question.TextSize=16
 question.Font=Enum.Font.GothamBold
-question.TextWrapped=true
 question.ZIndex=11
 question.Parent=confirm
 local yes=Instance.new("TextButton")
-yes.Size=UDim2.new(0,105,0,38)
-yes.Position=UDim2.new(0,25,0,90)
+yes.Size=UDim2.new(0,100,0,35)
+yes.Position=UDim2.new(0,15,0,70)
 yes.BackgroundColor3=Color3.fromRGB(180,55,55)
 yes.Text="CÓ"
 yes.TextColor3=Color3.fromRGB(255,255,255)
@@ -470,8 +360,8 @@ local yesCorner=Instance.new("UICorner")
 yesCorner.CornerRadius=UDim.new(0,8)
 yesCorner.Parent=yes
 local no=Instance.new("TextButton")
-no.Size=UDim2.new(0,105,0,38)
-no.Position=UDim2.new(0,150,0,90)
+no.Size=UDim2.new(0,100,0,35)
+no.Position=UDim2.new(0,135,0,70)
 no.BackgroundColor3=Color3.fromRGB(60,60,70)
 no.Text="KHÔNG"
 no.TextColor3=Color3.fromRGB(255,255,255)
@@ -547,6 +437,14 @@ uis.InputChanged:Connect(function(input)
 		open.Position=UDim2.new(openStartPos.X.Scale,openStartPos.X.Offset+delta.X,openStartPos.Y.Scale,openStartPos.Y.Offset+delta.Y)
 	end
 end)
+player.CharacterAdded:Connect(function(char)
+	local humanoid=char:WaitForChild("Humanoid")
+	if speedOn then humanoid.WalkSpeed=walkSpeed end
+	if jumpOn then
+		humanoid.UseJumpPower=true
+		humanoid.JumpPower=jumpPower
+	end
+end)
 players.PlayerAdded:Connect(function(target)
 	target.CharacterAdded:Connect(function()
 		task.wait(0.3)
@@ -555,6 +453,32 @@ players.PlayerAdded:Connect(function(target)
 end)
 players.PlayerRemoving:Connect(function()
 	if espOn then updateESP() end
+end)
+connection=run.RenderStepped:Connect(function()
+	if not flying then return end
+	local char=player.Character
+	local hrp=char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	local bv=hrp:FindFirstChild("FlyVelocity")
+	if not bv then
+		bv=Instance.new("BodyVelocity")
+		bv.Name="FlyVelocity"
+		bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
+		bv.Parent=hrp
+	end
+	local cam=workspace.CurrentCamera
+	local move=Vector3.zero
+	if uis:IsKeyDown(Enum.KeyCode.W) then move+=cam.CFrame.LookVector end
+	if uis:IsKeyDown(Enum.KeyCode.S) then move-=cam.CFrame.LookVector end
+	if uis:IsKeyDown(Enum.KeyCode.A) then move-=cam.CFrame.RightVector end
+	if uis:IsKeyDown(Enum.KeyCode.D) then move+=cam.CFrame.RightVector end
+	if uis:IsKeyDown(Enum.KeyCode.Space) then move+=Vector3.new(0,1,0) end
+	if uis:IsKeyDown(Enum.KeyCode.LeftControl) then move-=Vector3.new(0,1,0) end
+	if move.Magnitude>0 then
+		bv.Velocity=move.Unit*flySpeed
+	else
+		bv.Velocity=Vector3.zero
+	end
 end)
 task.spawn(function()
 	while gui.Parent do
