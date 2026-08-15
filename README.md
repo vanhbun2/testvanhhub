@@ -418,6 +418,7 @@ speedBox.FocusLost:Connect(function()
 	local v=tonumber(speedBox.Text)
 	if v and v>=1 then
 		walkSpeed=v
+		speedBox.Text=tostring(walkSpeed)
 		if speedOn then
 			local char=player.Character
 			local hum=char and char:FindFirstChildOfClass("Humanoid")
@@ -425,6 +426,17 @@ speedBox.FocusLost:Connect(function()
 		end
 	else
 		speedBox.Text=tostring(walkSpeed)
+	end
+end)
+speedBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local v=tonumber(speedBox.Text)
+	if v and v>=1 then
+		walkSpeed=v
+		if speedOn then
+			local char=player.Character
+			local hum=char and char:FindFirstChildOfClass("Humanoid")
+			if hum then hum.WalkSpeed=walkSpeed end
+		end
 	end
 end)
 jumpBox.FocusLost:Connect(function()
