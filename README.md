@@ -2,29 +2,24 @@ local player=game.Players.LocalPlayer
 local uis=game:GetService("UserInputService")
 local run=game:GetService("RunService")
 local players=game:GetService("Players")
-
 local flying=false
 local speedOn=false
 local jumpOn=false
 local espOn=false
 local aimOn=false
-
+local firing=false
 local flySpeed=60
 local walkSpeed=60
 local jumpPower=50
-
--- AIM SETTINGS
 local MAX_RANGE=120
 local currentTarget=nil
 local currentDistance=math.huge
-
+local currentAimPosition=nil
 local connection
-
 local gui=Instance.new("ScreenGui")
 gui.Name="Vanh"
 gui.ResetOnSpawn=false
 gui.Parent=player:WaitForChild("PlayerGui")
-
 local open=Instance.new("TextButton")
 open.Size=UDim2.new(0,85,0,42)
 open.Position=UDim2.new(0,20,0.5,-21)
@@ -34,31 +29,25 @@ open.TextColor3=Color3.fromRGB(255,255,255)
 open.TextSize=18
 open.Font=Enum.Font.GothamBold
 open.Parent=gui
-
 local openCorner=Instance.new("UICorner")
 openCorner.CornerRadius=UDim.new(0,10)
 openCorner.Parent=open
-
 local frame=Instance.new("Frame")
 frame.Size=UDim2.new(0,330,0,410)
 frame.Position=UDim2.new(0.5,-165,0.5,-205)
 frame.BackgroundColor3=Color3.fromRGB(20,20,25)
 frame.Visible=false
 frame.Parent=gui
-
 local frameCorner=Instance.new("UICorner")
 frameCorner.CornerRadius=UDim.new(0,15)
 frameCorner.Parent=frame
-
 local top=Instance.new("Frame")
 top.Size=UDim2.new(1,0,0,55)
 top.BackgroundColor3=Color3.fromRGB(28,28,34)
 top.Parent=frame
-
 local topCorner=Instance.new("UICorner")
 topCorner.CornerRadius=UDim.new(0,15)
 topCorner.Parent=top
-
 local title=Instance.new("TextLabel")
 title.Size=UDim2.new(1,-100,1,0)
 title.Position=UDim2.new(0,18,0,0)
@@ -69,7 +58,6 @@ title.TextSize=22
 title.Font=Enum.Font.GothamBold
 title.TextXAlignment=Enum.TextXAlignment.Left
 title.Parent=top
-
 local close=Instance.new("TextButton")
 close.Size=UDim2.new(0,35,0,35)
 close.Position=UDim2.new(1,-45,0,10)
@@ -79,11 +67,9 @@ close.TextColor3=Color3.fromRGB(255,255,255)
 close.TextSize=16
 close.Font=Enum.Font.GothamBold
 close.Parent=top
-
 local closeCorner=Instance.new("UICorner")
 closeCorner.CornerRadius=UDim.new(0,9)
 closeCorner.Parent=close
-
 local settings=Instance.new("TextButton")
 settings.Size=UDim2.new(0,140,0,38)
 settings.Position=UDim2.new(0,20,0,70)
@@ -93,11 +79,9 @@ settings.TextColor3=Color3.fromRGB(255,255,255)
 settings.TextSize=14
 settings.Font=Enum.Font.GothamBold
 settings.Parent=frame
-
 local settingsCorner=Instance.new("UICorner")
 settingsCorner.CornerRadius=UDim.new(0,9)
 settingsCorner.Parent=settings
-
 local aim=Instance.new("TextButton")
 aim.Size=UDim2.new(0,140,0,38)
 aim.Position=UDim2.new(0,170,0,70)
@@ -107,24 +91,20 @@ aim.TextColor3=Color3.fromRGB(180,180,190)
 aim.TextSize=14
 aim.Font=Enum.Font.GothamBold
 aim.Parent=frame
-
 local aimCorner=Instance.new("UICorner")
 aimCorner.CornerRadius=UDim.new(0,9)
 aimCorner.Parent=aim
-
 local settingsPage=Instance.new("Frame")
 settingsPage.Size=UDim2.new(1,-40,1,-125)
 settingsPage.Position=UDim2.new(0,20,0,120)
 settingsPage.BackgroundTransparency=1
 settingsPage.Parent=frame
-
 local aimPage=Instance.new("Frame")
 aimPage.Size=UDim2.new(1,-40,1,-125)
 aimPage.Position=UDim2.new(0,20,0,120)
 aimPage.BackgroundTransparency=1
 aimPage.Visible=false
 aimPage.Parent=frame
-
 local function createButton(text,y)
 	local b=Instance.new("TextButton")
 	b.Size=UDim2.new(0,100,0,38)
@@ -140,7 +120,6 @@ local function createButton(text,y)
 	c.Parent=b
 	return b
 end
-
 local function createBox(value,y)
 	local b=Instance.new("TextBox")
 	b.Size=UDim2.new(0,165,0,38)
@@ -157,28 +136,21 @@ local function createBox(value,y)
 	c.Parent=b
 	return b
 end
-
 local flyButton=createButton("FLY OFF",0)
 local flyBox=createBox(flySpeed,0)
-
 local speedButton=createButton("SPEED OFF",55)
 local speedBox=createBox(walkSpeed,55)
-
 local jumpButton=createButton("JUMP OFF",110)
 local jumpBox=createBox(jumpPower,110)
-
 local espButton=createButton("ESP OFF",165)
-
 local espFolder=Instance.new("Folder")
 espFolder.Name="VanhESP"
 espFolder.Parent=gui
-
 local function clearESP()
 	for _,v in ipairs(espFolder:GetChildren()) do
 		v:Destroy()
 	end
 end
-
 local function makeESP(target)
 	if not espOn or target==player then
 		return
@@ -215,7 +187,6 @@ local function makeESP(target)
 		info.Parent=bb
 	end
 end
-
 local function updateESP()
 	clearESP()
 	if not espOn then
@@ -225,15 +196,8 @@ local function updateESP()
 		makeESP(p)
 	end
 end
-
 local function isEnemy(target)
-	if not target then
-		return false
-	end
-	if target==player then
-		return false
-	end
-	if not target:IsA("Player") then
+	if not target or target==player or not target:IsA("Player") then
 		return false
 	end
 	local char=target.Character
@@ -242,70 +206,56 @@ local function isEnemy(target)
 	end
 	local hum=char:FindFirstChildOfClass("Humanoid")
 	local root=char:FindFirstChild("HumanoidRootPart")
-	if not hum or not root then
+	if not hum or not root or hum.Health<=0 then
 		return false
 	end
-	if hum.Health<=0 then
+	if player.Team~=nil and target.Team~=nil and player.Team==target.Team then
 		return false
-	end
-	if player.Team~=nil and target.Team~=nil then
-		if player.Team==target.Team then
-			return false
-		end
 	end
 	return true
 end
-
 local function getNearestEnemy()
 	local char=player.Character
-	if not char then
-		return nil,math.huge
-	end
-	local root=char:FindFirstChild("HumanoidRootPart")
+	local root=char and char:FindFirstChild("HumanoidRootPart")
 	if not root then
-		return nil,math.huge
+		return nil,math.huge,nil
 	end
 	local target=nil
 	local distance=MAX_RANGE
+	local position=nil
 	for _,p in ipairs(players:GetPlayers()) do
 		if isEnemy(p) then
 			local targetChar=p.Character
-			local targetRoot=targetChar:FindFirstChild("HumanoidRootPart")
+			local targetRoot=targetChar and targetChar:FindFirstChild("HumanoidRootPart")
 			if targetRoot then
 				local d=(targetRoot.Position-root.Position).Magnitude
 				if d<=distance then
 					distance=d
 					target=p
+					position=targetRoot.Position
 				end
 			end
 		end
 	end
-	return target,distance
+	return target,distance,position
 end
-
 local function updateTarget()
-	if not aimOn then
+	if not aimOn or not firing then
 		currentTarget=nil
 		currentDistance=math.huge
+		currentAimPosition=nil
 		return
 	end
-	local target,distance=getNearestEnemy()
+	local target,distance,position=getNearestEnemy()
 	currentTarget=target
 	currentDistance=distance
+	currentAimPosition=position
 	if target then
-		aimStatus.Text=
-			"Status: ON\n"..
-			"Target: "..target.DisplayName.."\n"..
-			"Distance: "..math.floor(distance)..
-			"\nRange: "..MAX_RANGE
+		aimStatus.Text="Status: ON\nTarget: "..target.DisplayName.."\nDistance: "..math.floor(distance).."\nRange: "..MAX_RANGE
 	else
-		aimStatus.Text=
-			"Status: ON\n"..
-			"Target: NONE\n"..
-			"Range: "..MAX_RANGE
+		aimStatus.Text="Status: ON\nTarget: NONE\nRange: "..MAX_RANGE
 	end
 end
-
 local aimTitle=Instance.new("TextLabel")
 aimTitle.Size=UDim2.new(1,0,0,30)
 aimTitle.Position=UDim2.new(0,0,0,5)
@@ -315,7 +265,6 @@ aimTitle.TextColor3=Color3.fromRGB(150,150,160)
 aimTitle.TextSize=16
 aimTitle.Font=Enum.Font.GothamBold
 aimTitle.Parent=aimPage
-
 local aimStatus=Instance.new("TextLabel")
 aimStatus.Size=UDim2.new(0,290,0,100)
 aimStatus.Position=UDim2.new(0,0,0,45)
@@ -327,7 +276,6 @@ aimStatus.Font=Enum.Font.Gotham
 aimStatus.TextWrapped=true
 aimStatus.TextYAlignment=Enum.TextYAlignment.Top
 aimStatus.Parent=aimPage
-
 local rangeBox=Instance.new("TextBox")
 rangeBox.Size=UDim2.new(0,290,0,38)
 rangeBox.Position=UDim2.new(0,0,0,110)
@@ -339,11 +287,9 @@ rangeBox.TextSize=14
 rangeBox.Font=Enum.Font.Gotham
 rangeBox.ClearTextOnFocus=false
 rangeBox.Parent=aimPage
-
 local rangeCorner=Instance.new("UICorner")
 rangeCorner.CornerRadius=UDim.new(0,9)
 rangeCorner.Parent=rangeBox
-
 local aimButton=Instance.new("TextButton")
 aimButton.Size=UDim2.new(0,290,0,40)
 aimButton.Position=UDim2.new(0,0,0,155)
@@ -353,11 +299,9 @@ aimButton.TextColor3=Color3.fromRGB(255,255,255)
 aimButton.TextSize=14
 aimButton.Font=Enum.Font.GothamBold
 aimButton.Parent=aimPage
-
 local aimButtonCorner=Instance.new("UICorner")
 aimButtonCorner.CornerRadius=UDim.new(0,9)
 aimButtonCorner.Parent=aimButton
-
 aimButton.MouseButton1Click:Connect(function()
 	aimOn=not aimOn
 	if aimOn then
@@ -369,10 +313,10 @@ aimButton.MouseButton1Click:Connect(function()
 		aimButton.BackgroundColor3=Color3.fromRGB(90,90,100)
 		currentTarget=nil
 		currentDistance=math.huge
+		currentAimPosition=nil
 		aimStatus.Text="Status: OFF"
 	end
 end)
-
 rangeBox.FocusLost:Connect(function()
 	local value=tonumber(rangeBox.Text)
 	if value and value>0 then
@@ -382,8 +326,26 @@ rangeBox.FocusLost:Connect(function()
 		rangeBox.Text=tostring(MAX_RANGE)
 	end
 end)
-
-
+uis.InputBegan:Connect(function(input,processed)
+	if processed then
+		return
+	end
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		firing=true
+		updateTarget()
+	end
+end)
+uis.InputEnded:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		firing=false
+		currentTarget=nil
+		currentDistance=math.huge
+		currentAimPosition=nil
+		if aimOn then
+			aimStatus.Text="Status: ON\nTarget: NONE\nRange: "..MAX_RANGE
+		end
+	end
+end)
 espButton.MouseButton1Click:Connect(function()
 	espOn=not espOn
 	if espOn then
@@ -396,19 +358,15 @@ espButton.MouseButton1Click:Connect(function()
 		clearESP()
 	end
 end)
-
-
 open.MouseButton1Click:Connect(function()
 	frame.Visible=not frame.Visible
 end)
-
 settings.MouseButton1Click:Connect(function()
 	settingsPage.Visible=true
 	aimPage.Visible=false
 	settings.BackgroundColor3=Color3.fromRGB(55,55,65)
 	aim.BackgroundColor3=Color3.fromRGB(35,35,42)
 end)
-
 aim.MouseButton1Click:Connect(function()
 	settingsPage.Visible=false
 	aimPage.Visible=true
@@ -416,7 +374,6 @@ aim.MouseButton1Click:Connect(function()
 	aim.BackgroundColor3=Color3.fromRGB(55,55,65)
 	updateTarget()
 end)
-
 flyButton.MouseButton1Click:Connect(function()
 	flying=not flying
 	if flying then
@@ -435,8 +392,6 @@ flyButton.MouseButton1Click:Connect(function()
 		end
 	end
 end)
-
-
 speedButton.MouseButton1Click:Connect(function()
 	speedOn=not speedOn
 	local char=player.Character
@@ -455,7 +410,6 @@ speedButton.MouseButton1Click:Connect(function()
 		end
 	end
 end)
-
 jumpButton.MouseButton1Click:Connect(function()
 	jumpOn=not jumpOn
 	local char=player.Character
@@ -476,8 +430,6 @@ jumpButton.MouseButton1Click:Connect(function()
 		end
 	end
 end)
-
-
 flyBox.FocusLost:Connect(function()
 	local v=tonumber(flyBox.Text)
 	if v and v>=1 then
@@ -486,7 +438,6 @@ flyBox.FocusLost:Connect(function()
 		flyBox.Text=tostring(flySpeed)
 	end
 end)
-
 speedBox.FocusLost:Connect(function()
 	local v=tonumber(speedBox.Text)
 	if v and v>=0 then
@@ -502,7 +453,6 @@ speedBox.FocusLost:Connect(function()
 		speedBox.Text=tostring(walkSpeed)
 	end
 end)
-
 jumpBox.FocusLost:Connect(function()
 	local v=tonumber(jumpBox.Text)
 	if v and v>=0 then
@@ -519,7 +469,6 @@ jumpBox.FocusLost:Connect(function()
 		jumpBox.Text=tostring(jumpPower)
 	end
 end)
-
 local confirm=Instance.new("Frame")
 confirm.Size=UDim2.new(0,280,0,145)
 confirm.Position=UDim2.new(0.5,-140,0.5,-72)
@@ -527,11 +476,9 @@ confirm.BackgroundColor3=Color3.fromRGB(25,25,30)
 confirm.Visible=false
 confirm.ZIndex=10
 confirm.Parent=gui
-
 local confirmCorner=Instance.new("UICorner")
 confirmCorner.CornerRadius=UDim.new(0,13)
 confirmCorner.Parent=confirm
-
 local question=Instance.new("TextLabel")
 question.Size=UDim2.new(1,-20,0,65)
 question.Position=UDim2.new(0,10,0,10)
@@ -543,7 +490,6 @@ question.Font=Enum.Font.GothamBold
 question.TextWrapped=true
 question.ZIndex=11
 question.Parent=confirm
-
 local yes=Instance.new("TextButton")
 yes.Size=UDim2.new(0,105,0,38)
 yes.Position=UDim2.new(0,25,0,90)
@@ -554,11 +500,9 @@ yes.TextSize=14
 yes.Font=Enum.Font.GothamBold
 yes.ZIndex=11
 yes.Parent=confirm
-
 local yesCorner=Instance.new("UICorner")
 yesCorner.CornerRadius=UDim.new(0,8)
 yesCorner.Parent=yes
-
 local no=Instance.new("TextButton")
 no.Size=UDim2.new(0,105,0,38)
 no.Position=UDim2.new(0,150,0,90)
@@ -569,26 +513,25 @@ no.TextSize=14
 no.Font=Enum.Font.GothamBold
 no.ZIndex=11
 no.Parent=confirm
-
 local noCorner=Instance.new("UICorner")
 noCorner.CornerRadius=UDim.new(0,8)
 noCorner.Parent=no
-
 close.MouseButton1Click:Connect(function()
 	confirm.Visible=true
 end)
-
 no.MouseButton1Click:Connect(function()
 	confirm.Visible=false
 end)
-
 yes.MouseButton1Click:Connect(function()
 	flying=false
 	speedOn=false
 	jumpOn=false
 	espOn=false
 	aimOn=false
+	firing=false
 	currentTarget=nil
+	currentDistance=math.huge
+	currentAimPosition=nil
 	clearESP()
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
@@ -604,12 +547,9 @@ yes.MouseButton1Click:Connect(function()
 	end
 	gui:Destroy()
 end)
-
-
 local dragging=false
 local dragStart
 local startPos
-
 top.InputBegan:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		dragging=true
@@ -617,29 +557,20 @@ top.InputBegan:Connect(function(input)
 		startPos=frame.Position
 	end
 end)
-
 top.InputEnded:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		dragging=false
 	end
 end)
-
 uis.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
 		local delta=input.Position-dragStart
-		frame.Position=UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset+delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset+delta.Y
-		)
+		frame.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+delta.X,startPos.Y.Scale,startPos.Y.Offset+delta.Y)
 	end
 end)
-
 local openDragging=false
 local openDragStart
 local openStartPos
-
 open.InputBegan:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		openDragging=true
@@ -647,28 +578,21 @@ open.InputBegan:Connect(function(input)
 		openStartPos=open.Position
 	end
 end)
-
 open.InputEnded:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		openDragging=false
 	end
 end)
-
 uis.InputChanged:Connect(function(input)
 	if openDragging and input.UserInputType==Enum.UserInputType.MouseMovement then
 		local delta=input.Position-openDragStart
-		open.Position=UDim2.new(
-			openStartPos.X.Scale,
-			openStartPos.X.Offset+delta.X,
-			openStartPos.Y.Scale,
-			openStartPos.Y.Offset+delta.Y
-		)
+		open.Position=UDim2.new(openStartPos.X.Scale,openStartPos.X.Offset+delta.X,openStartPos.Y.Scale,openStartPos.Y.Offset+delta.Y)
 	end
 end)
-
-
 player.CharacterAdded:Connect(function(char)
 	local hum=char:WaitForChild("Humanoid")
+	currentTarget=nil
+	currentAimPosition=nil
 	if speedOn then
 		hum.WalkSpeed=walkSpeed
 	end
@@ -676,9 +600,7 @@ player.CharacterAdded:Connect(function(char)
 		hum.UseJumpPower=true
 		hum.JumpPower=jumpPower
 	end
-	currentTarget=nil
 end)
-
 players.PlayerAdded:Connect(function(target)
 	target.CharacterAdded:Connect(function()
 		task.wait(0.3)
@@ -687,17 +609,16 @@ players.PlayerAdded:Connect(function(target)
 		end
 	end)
 end)
-
 players.PlayerRemoving:Connect(function(target)
 	if currentTarget==target then
 		currentTarget=nil
 		currentDistance=math.huge
+		currentAimPosition=nil
 	end
 	if espOn then
 		updateESP()
 	end
 end)
-
 connection=run.RenderStepped:Connect(function()
 	if flying then
 		local char=player.Character
@@ -707,11 +628,7 @@ connection=run.RenderStepped:Connect(function()
 			if not bv then
 				bv=Instance.new("BodyVelocity")
 				bv.Name="FlyVelocity"
-				bv.MaxForce=Vector3.new(
-					math.huge,
-					math.huge,
-					math.huge
-				)
+				bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
 				bv.Parent=hrp
 			end
 			local cam=workspace.CurrentCamera
@@ -741,12 +658,10 @@ connection=run.RenderStepped:Connect(function()
 			end
 		end
 	end
-	if aimOn then
+	if aimOn and firing then
 		updateTarget()
 	end
 end)
-
-
 task.spawn(function()
 	while gui.Parent do
 		if espOn then
@@ -755,7 +670,6 @@ task.spawn(function()
 		task.wait(0.35)
 	end
 end)
-
 task.spawn(function()
 	while gui.Parent do
 		local char=player.Character
