@@ -1,7 +1,7 @@
 local player=game.Players.LocalPlayer
-local players=game:GetService("Players")
 local uis=game:GetService("UserInputService")
 local run=game:GetService("RunService")
+local players=game:GetService("Players")
 
 local flying=false
 local speedOn=false
@@ -12,7 +12,8 @@ local aimOn=false
 local flySpeed=60
 local walkSpeed=60
 local jumpPower=50
-local aimRange=100
+
+local connection
 
 local gui=Instance.new("ScreenGui")
 gui.Name="Vanh"
@@ -29,9 +30,9 @@ open.TextSize=18
 open.Font=Enum.Font.GothamBold
 open.Parent=gui
 
-local oc=Instance.new("UICorner")
-oc.CornerRadius=UDim.new(0,10)
-oc.Parent=open
+local openCorner=Instance.new("UICorner")
+openCorner.CornerRadius=UDim.new(0,10)
+openCorner.Parent=open
 
 local frame=Instance.new("Frame")
 frame.Size=UDim2.new(0,330,0,410)
@@ -40,18 +41,18 @@ frame.BackgroundColor3=Color3.fromRGB(20,20,25)
 frame.Visible=false
 frame.Parent=gui
 
-local fc=Instance.new("UICorner")
-fc.CornerRadius=UDim.new(0,15)
-fc.Parent=frame
+local frameCorner=Instance.new("UICorner")
+frameCorner.CornerRadius=UDim.new(0,15)
+frameCorner.Parent=frame
 
 local top=Instance.new("Frame")
 top.Size=UDim2.new(1,0,0,55)
 top.BackgroundColor3=Color3.fromRGB(28,28,34)
 top.Parent=frame
 
-local tc=Instance.new("UICorner")
-tc.CornerRadius=UDim.new(0,15)
-tc.Parent=top
+local topCorner=Instance.new("UICorner")
+topCorner.CornerRadius=UDim.new(0,15)
+topCorner.Parent=top
 
 local title=Instance.new("TextLabel")
 title.Size=UDim2.new(1,-100,1,0)
@@ -74,9 +75,9 @@ close.TextSize=16
 close.Font=Enum.Font.GothamBold
 close.Parent=top
 
-local cc=Instance.new("UICorner")
-cc.CornerRadius=UDim.new(0,9)
-cc.Parent=close
+local closeCorner=Instance.new("UICorner")
+closeCorner.CornerRadius=UDim.new(0,9)
+closeCorner.Parent=close
 
 local settings=Instance.new("TextButton")
 settings.Size=UDim2.new(0,140,0,38)
@@ -88,9 +89,9 @@ settings.TextSize=14
 settings.Font=Enum.Font.GothamBold
 settings.Parent=frame
 
-local sc=Instance.new("UICorner")
-sc.CornerRadius=UDim.new(0,9)
-sc.Parent=settings
+local settingsCorner=Instance.new("UICorner")
+settingsCorner.CornerRadius=UDim.new(0,9)
+settingsCorner.Parent=settings
 
 local aim=Instance.new("TextButton")
 aim.Size=UDim2.new(0,140,0,38)
@@ -102,9 +103,9 @@ aim.TextSize=14
 aim.Font=Enum.Font.GothamBold
 aim.Parent=frame
 
-local ac=Instance.new("UICorner")
-ac.CornerRadius=UDim.new(0,9)
-ac.Parent=aim
+local aimCorner=Instance.new("UICorner")
+aimCorner.CornerRadius=UDim.new(0,9)
+aimCorner.Parent=aim
 
 local settingsPage=Instance.new("Frame")
 settingsPage.Size=UDim2.new(1,-40,1,-125)
@@ -119,7 +120,7 @@ aimPage.BackgroundTransparency=1
 aimPage.Visible=false
 aimPage.Parent=frame
 
-local function button(text,y)
+local function createButton(text,y)
 	local b=Instance.new("TextButton")
 	b.Size=UDim2.new(0,100,0,38)
 	b.Position=UDim2.new(0,0,0,y)
@@ -135,7 +136,7 @@ local function button(text,y)
 	return b
 end
 
-local function box(value,y)
+local function createBox(value,y)
 	local b=Instance.new("TextBox")
 	b.Size=UDim2.new(0,165,0,38)
 	b.Position=UDim2.new(0,125,0,y)
@@ -152,16 +153,16 @@ local function box(value,y)
 	return b
 end
 
-local flyButton=button("FLY OFF",0)
-local flyBox=box(flySpeed,0)
+local flyButton=createButton("FLY OFF",0)
+local flyBox=createBox(flySpeed,0)
 
-local speedButton=button("SPEED OFF",55)
-local speedBox=box(walkSpeed,55)
+local speedButton=createButton("SPEED OFF",55)
+local speedBox=createBox(walkSpeed,55)
 
-local jumpButton=button("JUMP OFF",110)
-local jumpBox=box(jumpPower,110)
+local jumpButton=createButton("JUMP OFF",110)
+local jumpBox=createBox(jumpPower,110)
 
-local espButton=button("ESP OFF",165)
+local espButton=createButton("ESP OFF",165)
 
 local espFolder=Instance.new("Folder")
 espFolder.Name="VanhESP"
@@ -182,7 +183,7 @@ local function makeESP(target)
 	if not hum then return end
 	local h=Instance.new("Highlight")
 	h.Adornee=char
-	h.FillTransparency=.65
+	h.FillTransparency=0.65
 	h.OutlineTransparency=0
 	h.Parent=espFolder
 	if head then
@@ -192,15 +193,15 @@ local function makeESP(target)
 		bb.StudsOffset=Vector3.new(0,3,0)
 		bb.AlwaysOnTop=true
 		bb.Parent=espFolder
-		local t=Instance.new("TextLabel")
-		t.Size=UDim2.new(1,0,1,0)
-		t.BackgroundTransparency=1
-		t.TextColor3=Color3.fromRGB(255,255,255)
-		t.TextStrokeTransparency=0
-		t.TextSize=14
-		t.Font=Enum.Font.GothamBold
-		t.Text=target.DisplayName.." ["..target.Name.."]\nHP: "..math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)
-		t.Parent=bb
+		local info=Instance.new("TextLabel")
+		info.Size=UDim2.new(1,0,1,0)
+		info.BackgroundTransparency=1
+		info.TextColor3=Color3.fromRGB(255,255,255)
+		info.TextStrokeTransparency=0
+		info.TextSize=14
+		info.Font=Enum.Font.GothamBold
+		info.Text=target.DisplayName.." ["..target.Name.."]\nHP: "..math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)
+		info.Parent=bb
 	end
 end
 
@@ -212,19 +213,19 @@ local function updateESP()
 	end
 end
 
-local function nearestPlayer()
+local function getNearestPlayer()
 	local char=player.Character
-	local root=char and char:FindFirstChild("HumanoidRootPart")
-	if not root then return nil end
+	local hrp=char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return nil end
 	local target=nil
-	local distance=aimRange
+	local distance=math.huge
 	for _,p in ipairs(players:GetPlayers()) do
 		if p~=player then
 			local c=p.Character
-			local r=c and c:FindFirstChild("HumanoidRootPart")
-			local h=c and c:FindFirstChildOfClass("Humanoid")
-			if r and h and h.Health>0 then
-				local d=(r.Position-root.Position).Magnitude
+			local h=c and c:FindFirstChild("HumanoidRootPart")
+			local hum=c and c:FindFirstChildOfClass("Humanoid")
+			if h and hum and hum.Health>0 then
+				local d=(h.Position-hrp.Position).Magnitude
 				if d<distance then
 					distance=d
 					target=p
@@ -233,6 +234,22 @@ local function nearestPlayer()
 		end
 	end
 	return target
+end
+
+local function aimAtNearest()
+	if not aimOn then return end
+	local char=player.Character
+	local hrp=char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	local target=getNearestPlayer()
+	if not target then return end
+	local targetChar=target.Character
+	local targetHrp=targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+	if not targetHrp then return end
+	hrp.CFrame=CFrame.lookAt(
+		hrp.Position,
+		targetHrp.Position
+	)
 end
 
 local aimTitle=Instance.new("TextLabel")
@@ -249,7 +266,7 @@ local aimStatus=Instance.new("TextLabel")
 aimStatus.Size=UDim2.new(0,290,0,100)
 aimStatus.Position=UDim2.new(0,0,0,45)
 aimStatus.BackgroundTransparency=1
-aimStatus.Text="Status: OFF\nTarget: NONE"
+aimStatus.Text="Status: OFF"
 aimStatus.TextColor3=Color3.fromRGB(180,180,190)
 aimStatus.TextSize=12
 aimStatus.Font=Enum.Font.Gotham
@@ -267,30 +284,38 @@ aimButton.TextSize=14
 aimButton.Font=Enum.Font.GothamBold
 aimButton.Parent=aimPage
 
-local abc=Instance.new("UICorner")
-abc.CornerRadius=UDim.new(0,9)
-abc.Parent=aimButton
-
-local function useAimSkill()
-	if not aimOn then return end
-	local target=nearestPlayer()
-	if not target then return end
-	local char=target.Character
-	local root=char and char:FindFirstChild("HumanoidRootPart")
-	if not root then return end
-	return target,root.Position
-end
+local aimButtonCorner=Instance.new("UICorner")
+aimButtonCorner.CornerRadius=UDim.new(0,9)
+aimButtonCorner.Parent=aimButton
 
 aimButton.MouseButton1Click:Connect(function()
 	aimOn=not aimOn
 	if aimOn then
 		aimButton.Text="AIM ON"
 		aimButton.BackgroundColor3=Color3.fromRGB(45,170,90)
+		aimStatus.Text="Status: AIMING\nTarget: PLAYER GẦN NHẤT"
 	else
 		aimButton.Text="AIM OFF"
 		aimButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-		aimStatus.Text="Status: OFF\nTarget: NONE"
+		aimStatus.Text="Status: OFF"
 	end
+end)
+
+espButton.MouseButton1Click:Connect(function()
+	espOn=not espOn
+	if espOn then
+		espButton.Text="ESP ON"
+		espButton.BackgroundColor3=Color3.fromRGB(45,170,90)
+		updateESP()
+	else
+		espButton.Text="ESP OFF"
+		espButton.BackgroundColor3=Color3.fromRGB(90,90,100)
+		clearESP()
+	end
+end)
+
+open.MouseButton1Click:Connect(function()
+	frame.Visible=not frame.Visible
 end)
 
 settings.MouseButton1Click:Connect(function()
@@ -307,23 +332,6 @@ aim.MouseButton1Click:Connect(function()
 	aim.BackgroundColor3=Color3.fromRGB(55,55,65)
 end)
 
-open.MouseButton1Click:Connect(function()
-	frame.Visible=not frame.Visible
-end)
-
-espButton.MouseButton1Click:Connect(function()
-	espOn=not espOn
-	if espOn then
-		espButton.Text="ESP ON"
-		espButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-		updateESP()
-	else
-		espButton.Text="ESP OFF"
-		espButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-		clearESP()
-	end
-end)
-
 flyButton.MouseButton1Click:Connect(function()
 	flying=not flying
 	if flying then
@@ -333,27 +341,29 @@ flyButton.MouseButton1Click:Connect(function()
 		flyButton.Text="FLY OFF"
 		flyButton.BackgroundColor3=Color3.fromRGB(90,90,100)
 		local char=player.Character
-		local root=char and char:FindFirstChild("HumanoidRootPart")
-		local bv=root and root:FindFirstChild("FlyVelocity")
-		if bv then bv:Destroy() end
+		local hrp=char and char:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			local bv=hrp:FindFirstChild("FlyVelocity")
+			if bv then bv:Destroy() end
+		end
 	end
 end)
 
 speedButton.MouseButton1Click:Connect(function()
 	speedOn=not speedOn
 	local char=player.Character
-	local hum=char and char:FindFirstChildOfClass("Humanoid")
+	local humanoid=char and char:FindFirstChildOfClass("Humanoid")
 	if speedOn then
 		speedButton.Text="SPEED ON"
 		speedButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-		if hum then
-			hum.WalkSpeed=walkSpeed
+		if humanoid then
+			humanoid.WalkSpeed=walkSpeed
 		end
 	else
 		speedButton.Text="SPEED OFF"
 		speedButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-		if hum then
-			hum.WalkSpeed=16
+		if humanoid then
+			humanoid.WalkSpeed=16
 		end
 	end
 end)
@@ -361,20 +371,20 @@ end)
 jumpButton.MouseButton1Click:Connect(function()
 	jumpOn=not jumpOn
 	local char=player.Character
-	local hum=char and char:FindFirstChildOfClass("Humanoid")
+	local humanoid=char and char:FindFirstChildOfClass("Humanoid")
 	if jumpOn then
 		jumpButton.Text="JUMP ON"
 		jumpButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-		if hum then
-			hum.UseJumpPower=true
-			hum.JumpPower=jumpPower
+		if humanoid then
+			humanoid.UseJumpPower=true
+			humanoid.JumpPower=jumpPower
 		end
 	else
 		jumpButton.Text="JUMP OFF"
 		jumpButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-		if hum then
-			hum.UseJumpPower=true
-			hum.JumpPower=50
+		if humanoid then
+			humanoid.UseJumpPower=true
+			humanoid.JumpPower=50
 		end
 	end
 end)
@@ -421,6 +431,88 @@ jumpBox.FocusLost:Connect(function()
 	end
 end)
 
+local confirm=Instance.new("Frame")
+confirm.Size=UDim2.new(0,280,0,145)
+confirm.Position=UDim2.new(0.5,-140,0.5,-72)
+confirm.BackgroundColor3=Color3.fromRGB(25,25,30)
+confirm.Visible=false
+confirm.ZIndex=10
+confirm.Parent=gui
+
+local confirmCorner=Instance.new("UICorner")
+confirmCorner.CornerRadius=UDim.new(0,13)
+confirmCorner.Parent=confirm
+
+local question=Instance.new("TextLabel")
+question.Size=UDim2.new(1,-20,0,65)
+question.Position=UDim2.new(0,10,0,10)
+question.BackgroundTransparency=1
+question.Text="Bạn có xác định tắt script?"
+question.TextColor3=Color3.fromRGB(255,255,255)
+question.TextSize=16
+question.Font=Enum.Font.GothamBold
+question.TextWrapped=true
+question.ZIndex=11
+question.Parent=confirm
+
+local yes=Instance.new("TextButton")
+yes.Size=UDim2.new(0,105,0,38)
+yes.Position=UDim2.new(0,25,0,90)
+yes.BackgroundColor3=Color3.fromRGB(180,55,55)
+yes.Text="CÓ"
+yes.TextColor3=Color3.fromRGB(255,255,255)
+yes.TextSize=14
+yes.Font=Enum.Font.GothamBold
+yes.ZIndex=11
+yes.Parent=confirm
+
+local yesCorner=Instance.new("UICorner")
+yesCorner.CornerRadius=UDim.new(0,8)
+yesCorner.Parent=yes
+
+local no=Instance.new("TextButton")
+no.Size=UDim2.new(0,105,0,38)
+no.Position=UDim2.new(0,150,0,90)
+no.BackgroundColor3=Color3.fromRGB(60,60,70)
+no.Text="KHÔNG"
+no.TextColor3=Color3.fromRGB(255,255,255)
+no.TextSize=14
+no.Font=Enum.Font.GothamBold
+no.ZIndex=11
+no.Parent=confirm
+
+local noCorner=Instance.new("UICorner")
+noCorner.CornerRadius=UDim.new(0,8)
+noCorner.Parent=no
+
+close.MouseButton1Click:Connect(function()
+	confirm.Visible=true
+end)
+
+no.MouseButton1Click:Connect(function()
+	confirm.Visible=false
+end)
+
+yes.MouseButton1Click:Connect(function()
+	flying=false
+	speedOn=false
+	jumpOn=false
+	espOn=false
+	aimOn=false
+	clearESP()
+	local char=player.Character
+	local hrp=char and char:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		local bv=hrp:FindFirstChild("FlyVelocity")
+		if bv then bv:Destroy() end
+	end
+	if connection then
+		connection:Disconnect()
+		connection=nil
+	end
+	gui:Destroy()
+end)
+
 local dragging=false
 local dragStart
 local startPos
@@ -451,6 +543,36 @@ uis.InputChanged:Connect(function(input)
 	end
 end)
 
+local openDragging=false
+local openDragStart
+local openStartPos
+
+open.InputBegan:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		openDragging=true
+		openDragStart=input.Position
+		openStartPos=open.Position
+	end
+end)
+
+open.InputEnded:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		openDragging=false
+	end
+end)
+
+uis.InputChanged:Connect(function(input)
+	if openDragging and input.UserInputType==Enum.UserInputType.MouseMovement then
+		local delta=input.Position-openDragStart
+		open.Position=UDim2.new(
+			openStartPos.X.Scale,
+			openStartPos.X.Offset+delta.X,
+			openStartPos.Y.Scale,
+			openStartPos.Y.Offset+delta.Y
+		)
+	end
+end)
+
 player.CharacterAdded:Connect(function(char)
 	local hum=char:WaitForChild("Humanoid")
 	if speedOn then
@@ -462,9 +584,9 @@ player.CharacterAdded:Connect(function(char)
 	end
 end)
 
-players.PlayerAdded:Connect(function(p)
-	p.CharacterAdded:Connect(function()
-		task.wait(.3)
+players.PlayerAdded:Connect(function(target)
+	target.CharacterAdded:Connect(function()
+		task.wait(0.3)
 		if espOn then
 			updateESP()
 		end
@@ -477,17 +599,17 @@ players.PlayerRemoving:Connect(function()
 	end
 end)
 
-run.RenderStepped:Connect(function()
+connection=run.RenderStepped:Connect(function()
 	if flying then
 		local char=player.Character
-		local root=char and char:FindFirstChild("HumanoidRootPart")
-		if root then
-			local bv=root:FindFirstChild("FlyVelocity")
+		local hrp=char and char:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			local bv=hrp:FindFirstChild("FlyVelocity")
 			if not bv then
 				bv=Instance.new("BodyVelocity")
 				bv.Name="FlyVelocity"
 				bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
-				bv.Parent=root
+				bv.Parent=hrp
 			end
 			local cam=workspace.CurrentCamera
 			local move=Vector3.zero
@@ -509,16 +631,15 @@ run.RenderStepped:Connect(function()
 			if uis:IsKeyDown(Enum.KeyCode.LeftControl) then
 				move-=Vector3.new(0,1,0)
 			end
-			bv.Velocity=move.Magnitude>0 and move.Unit*flySpeed or Vector3.zero
+			if move.Magnitude>0 then
+				bv.Velocity=move.Unit*flySpeed
+			else
+				bv.Velocity=Vector3.zero
+			end
 		end
 	end
 	if aimOn then
-		local target=nearestPlayer()
-		if target then
-			aimStatus.Text="Status: ON\nTarget: "..target.Name
-		else
-			aimStatus.Text="Status: ON\nTarget: NONE"
-		end
+		aimAtNearest()
 	end
 end)
 
@@ -527,7 +648,7 @@ task.spawn(function()
 		if espOn then
 			updateESP()
 		end
-		task.wait(.5)
+		task.wait(0.35)
 	end
 end)
 
@@ -544,6 +665,6 @@ task.spawn(function()
 				hum.JumpPower=jumpPower
 			end
 		end
-		task.wait(.1)
+		task.wait(0.1)
 	end
 end)
