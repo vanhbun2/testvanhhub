@@ -13,6 +13,11 @@ local flySpeed=60
 local walkSpeed=60
 local jumpPower=50
 
+-- AIM SETTINGS
+local MAX_RANGE=120
+local currentTarget=nil
+local currentDistance=math.huge
+
 local connection
 
 local gui=Instance.new("ScreenGui")
@@ -175,12 +180,18 @@ local function clearESP()
 end
 
 local function makeESP(target)
-	if not espOn or target==player then return end
+	if not espOn or target==player then
+		return
+	end
 	local char=target.Character
-	if not char then return end
+	if not char then
+		return
+	end
 	local hum=char:FindFirstChildOfClass("Humanoid")
 	local head=char:FindFirstChild("Head")
-	if not hum then return end
+	if not hum then
+		return
+	end
 	local h=Instance.new("Highlight")
 	h.Adornee=char
 	h.FillTransparency=0.65
@@ -207,56 +218,99 @@ end
 
 local function updateESP()
 	clearESP()
-	if not espOn then return end
+	if not espOn then
+		return
+	end
 	for _,p in ipairs(players:GetPlayers()) do
 		makeESP(p)
 	end
 end
 
-local function getNearestPlayer()
+local function isEnemy(target)
+	if not target then
+		return false
+	end
+	if target==player then
+		return false
+	end
+	if not target:IsA("Player") then
+		return false
+	end
+	local char=target.Character
+	if not char then
+		return false
+	end
+	local hum=char:FindFirstChildOfClass("Humanoid")
+	local root=char:FindFirstChild("HumanoidRootPart")
+	if not hum or not root then
+		return false
+	end
+	if hum.Health<=0 then
+		return false
+	end
+	if player.Team~=nil and target.Team~=nil then
+		if player.Team==target.Team then
+			return false
+		end
+	end
+	return true
+end
+
+local function getNearestEnemy()
 	local char=player.Character
-	local hrp=char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return nil end
+	if not char then
+		return nil,math.huge
+	end
+	local root=char:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return nil,math.huge
+	end
 	local target=nil
-	local distance=math.huge
+	local distance=MAX_RANGE
 	for _,p in ipairs(players:GetPlayers()) do
-		if p~=player then
-			local c=p.Character
-			local h=c and c:FindFirstChild("HumanoidRootPart")
-			local hum=c and c:FindFirstChildOfClass("Humanoid")
-			if h and hum and hum.Health>0 then
-				local d=(h.Position-hrp.Position).Magnitude
-				if d<distance then
+		if isEnemy(p) then
+			local targetChar=p.Character
+			local targetRoot=targetChar:FindFirstChild("HumanoidRootPart")
+			if targetRoot then
+				local d=(targetRoot.Position-root.Position).Magnitude
+				if d<=distance then
 					distance=d
 					target=p
 				end
 			end
 		end
 	end
-	return target
+	return target,distance
 end
 
-local function aimAtNearest()
-	if not aimOn then return end
-	local char=player.Character
-	local hrp=char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	local target=getNearestPlayer()
-	if not target then return end
-	local targetChar=target.Character
-	local targetHrp=targetChar and targetChar:FindFirstChild("HumanoidRootPart")
-	if not targetHrp then return end
-	hrp.CFrame=CFrame.lookAt(
-		hrp.Position,
-		targetHrp.Position
-	)
+local function updateTarget()
+	if not aimOn then
+		currentTarget=nil
+		currentDistance=math.huge
+		return
+	end
+	local target,distance=getNearestEnemy()
+	currentTarget=target
+	currentDistance=distance
+	if target then
+		aimStatus.Text=
+			"Status: ON\n"..
+			"Target: "..target.DisplayName.."\n"..
+			"Distance: "..math.floor(distance)..
+			"\nRange: "..MAX_RANGE
+	else
+		aimStatus.Text=
+			"Status: ON\n"..
+			"Target: NONE\n"..
+			"Range: "..MAX_RANGE
+	end
 end
 
 local aimTitle=Instance.new("TextLabel")
 aimTitle.Size=UDim2.new(1,0,0,30)
 aimTitle.Position=UDim2.new(0,0,0,5)
 aimTitle.BackgroundTransparency=1
-aimTitle.Text="AIM • PLAYER"
+aimTitle.Text="AIM • ENEMY PLAYER"
 aimTitle.TextColor3=Color3.fromRGB(150,150,160)
 aimTitle.TextSize=16
 aimTitle.Font=Enum.Font.GothamBold
@@ -273,6 +327,22 @@ aimStatus.Font=Enum.Font.Gotham
 aimStatus.TextWrapped=true
 aimStatus.TextYAlignment=Enum.TextYAlignment.Top
 aimStatus.Parent=aimPage
+
+local rangeBox=Instance.new("TextBox")
+rangeBox.Size=UDim2.new(0,290,0,38)
+rangeBox.Position=UDim2.new(0,0,0,110)
+rangeBox.BackgroundColor3=Color3.fromRGB(35,35,42)
+rangeBox.Text=tostring(MAX_RANGE)
+rangeBox.PlaceholderText="AIM RANGE"
+rangeBox.TextColor3=Color3.fromRGB(255,255,255)
+rangeBox.TextSize=14
+rangeBox.Font=Enum.Font.Gotham
+rangeBox.ClearTextOnFocus=false
+rangeBox.Parent=aimPage
+
+local rangeCorner=Instance.new("UICorner")
+rangeCorner.CornerRadius=UDim.new(0,9)
+rangeCorner.Parent=rangeBox
 
 local aimButton=Instance.new("TextButton")
 aimButton.Size=UDim2.new(0,290,0,40)
@@ -293,13 +363,26 @@ aimButton.MouseButton1Click:Connect(function()
 	if aimOn then
 		aimButton.Text="AIM ON"
 		aimButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-		aimStatus.Text="Status: AIMING\nTarget: PLAYER GẦN NHẤT"
+		updateTarget()
 	else
 		aimButton.Text="AIM OFF"
 		aimButton.BackgroundColor3=Color3.fromRGB(90,90,100)
+		currentTarget=nil
+		currentDistance=math.huge
 		aimStatus.Text="Status: OFF"
 	end
 end)
+
+rangeBox.FocusLost:Connect(function()
+	local value=tonumber(rangeBox.Text)
+	if value and value>0 then
+		MAX_RANGE=value
+		updateTarget()
+	else
+		rangeBox.Text=tostring(MAX_RANGE)
+	end
+end)
+
 
 espButton.MouseButton1Click:Connect(function()
 	espOn=not espOn
@@ -313,6 +396,7 @@ espButton.MouseButton1Click:Connect(function()
 		clearESP()
 	end
 end)
+
 
 open.MouseButton1Click:Connect(function()
 	frame.Visible=not frame.Visible
@@ -330,6 +414,7 @@ aim.MouseButton1Click:Connect(function()
 	aimPage.Visible=true
 	settings.BackgroundColor3=Color3.fromRGB(35,35,42)
 	aim.BackgroundColor3=Color3.fromRGB(55,55,65)
+	updateTarget()
 end)
 
 flyButton.MouseButton1Click:Connect(function()
@@ -344,10 +429,13 @@ flyButton.MouseButton1Click:Connect(function()
 		local hrp=char and char:FindFirstChild("HumanoidRootPart")
 		if hrp then
 			local bv=hrp:FindFirstChild("FlyVelocity")
-			if bv then bv:Destroy() end
+			if bv then
+				bv:Destroy()
+			end
 		end
 	end
 end)
+
 
 speedButton.MouseButton1Click:Connect(function()
 	speedOn=not speedOn
@@ -388,6 +476,7 @@ jumpButton.MouseButton1Click:Connect(function()
 		end
 	end
 end)
+
 
 flyBox.FocusLost:Connect(function()
 	local v=tonumber(flyBox.Text)
@@ -499,12 +588,15 @@ yes.MouseButton1Click:Connect(function()
 	jumpOn=false
 	espOn=false
 	aimOn=false
+	currentTarget=nil
 	clearESP()
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
 	if hrp then
 		local bv=hrp:FindFirstChild("FlyVelocity")
-		if bv then bv:Destroy() end
+		if bv then
+			bv:Destroy()
+		end
 	end
 	if connection then
 		connection:Disconnect()
@@ -512,6 +604,7 @@ yes.MouseButton1Click:Connect(function()
 	end
 	gui:Destroy()
 end)
+
 
 local dragging=false
 local dragStart
@@ -573,6 +666,7 @@ uis.InputChanged:Connect(function(input)
 	end
 end)
 
+
 player.CharacterAdded:Connect(function(char)
 	local hum=char:WaitForChild("Humanoid")
 	if speedOn then
@@ -582,6 +676,7 @@ player.CharacterAdded:Connect(function(char)
 		hum.UseJumpPower=true
 		hum.JumpPower=jumpPower
 	end
+	currentTarget=nil
 end)
 
 players.PlayerAdded:Connect(function(target)
@@ -593,7 +688,11 @@ players.PlayerAdded:Connect(function(target)
 	end)
 end)
 
-players.PlayerRemoving:Connect(function()
+players.PlayerRemoving:Connect(function(target)
+	if currentTarget==target then
+		currentTarget=nil
+		currentDistance=math.huge
+	end
 	if espOn then
 		updateESP()
 	end
@@ -608,7 +707,11 @@ connection=run.RenderStepped:Connect(function()
 			if not bv then
 				bv=Instance.new("BodyVelocity")
 				bv.Name="FlyVelocity"
-				bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
+				bv.MaxForce=Vector3.new(
+					math.huge,
+					math.huge,
+					math.huge
+				)
 				bv.Parent=hrp
 			end
 			local cam=workspace.CurrentCamera
@@ -639,9 +742,10 @@ connection=run.RenderStepped:Connect(function()
 		end
 	end
 	if aimOn then
-		aimAtNearest()
+		updateTarget()
 	end
 end)
+
 
 task.spawn(function()
 	while gui.Parent do
