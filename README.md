@@ -129,11 +129,9 @@ local function button(text,y)
 	b.TextSize=12
 	b.Font=Enum.Font.GothamBold
 	b.Parent=settingsPage
-
 	local c=Instance.new("UICorner")
 	c.CornerRadius=UDim.new(0,9)
 	c.Parent=b
-
 	return b
 end
 
@@ -148,11 +146,9 @@ local function box(value,y)
 	b.Font=Enum.Font.Gotham
 	b.ClearTextOnFocus=false
 	b.Parent=settingsPage
-
 	local c=Instance.new("UICorner")
 	c.CornerRadius=UDim.new(0,9)
 	c.Parent=b
-
 	return b
 end
 
@@ -179,21 +175,16 @@ end
 
 local function makeESP(target)
 	if not espOn or target==player then return end
-
 	local char=target.Character
 	if not char then return end
-
 	local hum=char:FindFirstChildOfClass("Humanoid")
 	local head=char:FindFirstChild("Head")
-
 	if not hum then return end
-
 	local h=Instance.new("Highlight")
 	h.Adornee=char
 	h.FillTransparency=.65
 	h.OutlineTransparency=0
 	h.Parent=espFolder
-
 	if head then
 		local bb=Instance.new("BillboardGui")
 		bb.Adornee=head
@@ -201,7 +192,6 @@ local function makeESP(target)
 		bb.StudsOffset=Vector3.new(0,3,0)
 		bb.AlwaysOnTop=true
 		bb.Parent=espFolder
-
 		local t=Instance.new("TextLabel")
 		t.Size=UDim2.new(1,0,1,0)
 		t.BackgroundTransparency=1
@@ -216,9 +206,7 @@ end
 
 local function updateESP()
 	clearESP()
-
 	if not espOn then return end
-
 	for _,p in ipairs(players:GetPlayers()) do
 		makeESP(p)
 	end
@@ -227,21 +215,16 @@ end
 local function nearestPlayer()
 	local char=player.Character
 	local root=char and char:FindFirstChild("HumanoidRootPart")
-
 	if not root then return nil end
-
 	local target=nil
 	local distance=aimRange
-
 	for _,p in ipairs(players:GetPlayers()) do
 		if p~=player then
 			local c=p.Character
 			local r=c and c:FindFirstChild("HumanoidRootPart")
 			local h=c and c:FindFirstChildOfClass("Humanoid")
-
 			if r and h and h.Health>0 then
 				local d=(r.Position-root.Position).Magnitude
-
 				if d<distance then
 					distance=d
 					target=p
@@ -249,7 +232,6 @@ local function nearestPlayer()
 			end
 		end
 	end
-
 	return target
 end
 
@@ -291,22 +273,16 @@ abc.Parent=aimButton
 
 local function useAimSkill()
 	if not aimOn then return end
-
 	local target=nearestPlayer()
-
 	if not target then return end
-
 	local char=target.Character
 	local root=char and char:FindFirstChild("HumanoidRootPart")
-
 	if not root then return end
-
 	return target,root.Position
 end
 
 aimButton.MouseButton1Click:Connect(function()
 	aimOn=not aimOn
-
 	if aimOn then
 		aimButton.Text="AIM ON"
 		aimButton.BackgroundColor3=Color3.fromRGB(45,170,90)
@@ -337,7 +313,6 @@ end)
 
 espButton.MouseButton1Click:Connect(function()
 	espOn=not espOn
-
 	if espOn then
 		espButton.Text="ESP ON"
 		espButton.BackgroundColor3=Color3.fromRGB(45,170,90)
@@ -351,39 +326,32 @@ end)
 
 flyButton.MouseButton1Click:Connect(function()
 	flying=not flying
-
 	if flying then
 		flyButton.Text="FLY ON"
 		flyButton.BackgroundColor3=Color3.fromRGB(45,170,90)
 	else
 		flyButton.Text="FLY OFF"
 		flyButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-
 		local char=player.Character
 		local root=char and char:FindFirstChild("HumanoidRootPart")
 		local bv=root and root:FindFirstChild("FlyVelocity")
-
 		if bv then bv:Destroy() end
 	end
 end)
 
 speedButton.MouseButton1Click:Connect(function()
 	speedOn=not speedOn
-
 	local char=player.Character
 	local hum=char and char:FindFirstChildOfClass("Humanoid")
-
 	if speedOn then
 		speedButton.Text="SPEED ON"
 		speedButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-
 		if hum then
 			hum.WalkSpeed=walkSpeed
 		end
 	else
 		speedButton.Text="SPEED OFF"
 		speedButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-
 		if hum then
 			hum.WalkSpeed=16
 		end
@@ -392,14 +360,11 @@ end)
 
 jumpButton.MouseButton1Click:Connect(function()
 	jumpOn=not jumpOn
-
 	local char=player.Character
 	local hum=char and char:FindFirstChildOfClass("Humanoid")
-
 	if jumpOn then
 		jumpButton.Text="JUMP ON"
 		jumpButton.BackgroundColor3=Color3.fromRGB(45,170,90)
-
 		if hum then
 			hum.UseJumpPower=true
 			hum.JumpPower=jumpPower
@@ -407,7 +372,6 @@ jumpButton.MouseButton1Click:Connect(function()
 	else
 		jumpButton.Text="JUMP OFF"
 		jumpButton.BackgroundColor3=Color3.fromRGB(90,90,100)
-
 		if hum then
 			hum.UseJumpPower=true
 			hum.JumpPower=50
@@ -417,7 +381,6 @@ end)
 
 flyBox.FocusLost:Connect(function()
 	local v=tonumber(flyBox.Text)
-
 	if v and v>=1 then
 		flySpeed=v
 	else
@@ -427,14 +390,11 @@ end)
 
 speedBox.FocusLost:Connect(function()
 	local v=tonumber(speedBox.Text)
-
 	if v and v>=0 then
 		walkSpeed=v
-
 		if speedOn then
 			local char=player.Character
 			local hum=char and char:FindFirstChildOfClass("Humanoid")
-
 			if hum then
 				hum.WalkSpeed=walkSpeed
 			end
@@ -446,14 +406,11 @@ end)
 
 jumpBox.FocusLost:Connect(function()
 	local v=tonumber(jumpBox.Text)
-
 	if v and v>=0 then
 		jumpPower=v
-
 		if jumpOn then
 			local char=player.Character
 			local hum=char and char:FindFirstChildOfClass("Humanoid")
-
 			if hum then
 				hum.UseJumpPower=true
 				hum.JumpPower=jumpPower
@@ -485,7 +442,6 @@ end)
 uis.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
 		local delta=input.Position-dragStart
-
 		frame.Position=UDim2.new(
 			startPos.X.Scale,
 			startPos.X.Offset+delta.X,
@@ -497,11 +453,9 @@ end)
 
 player.CharacterAdded:Connect(function(char)
 	local hum=char:WaitForChild("Humanoid")
-
 	if speedOn then
 		hum.WalkSpeed=walkSpeed
 	end
-
 	if jumpOn then
 		hum.UseJumpPower=true
 		hum.JumpPower=jumpPower
@@ -511,7 +465,6 @@ end)
 players.PlayerAdded:Connect(function(p)
 	p.CharacterAdded:Connect(function()
 		task.wait(.3)
-
 		if espOn then
 			updateESP()
 		end
@@ -528,17 +481,14 @@ run.RenderStepped:Connect(function()
 	if flying then
 		local char=player.Character
 		local root=char and char:FindFirstChild("HumanoidRootPart")
-
 		if root then
 			local bv=root:FindFirstChild("FlyVelocity")
-
 			if not bv then
 				bv=Instance.new("BodyVelocity")
 				bv.Name="FlyVelocity"
 				bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
 				bv.Parent=root
 			end
-
 			local cam=workspace.CurrentCamera
 			local move=Vector3.zero
 			if uis:IsKeyDown(Enum.KeyCode.W) then
@@ -562,7 +512,6 @@ run.RenderStepped:Connect(function()
 			bv.Velocity=move.Magnitude>0 and move.Unit*flySpeed or Vector3.zero
 		end
 	end
-
 	if aimOn then
 		local target=nearestPlayer()
 		if target then
