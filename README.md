@@ -2,32 +2,26 @@ local player=game.Players.LocalPlayer
 local uis=game:GetService("UserInputService")
 local run=game:GetService("RunService")
 local players=game:GetService("Players")
-
 local flying=false
 local speedOn=false
 local jumpOn=false
 local espOn=false
 local noclipOn=false
 local aimOn=false
-
 local flySpeed=60
 local walkSpeed=60
 local jumpPower=50
 local aimRange=100
-
 local connection
-
 local gui=Instance.new("ScreenGui")
 gui.Name="Vanh"
 gui.ResetOnSpawn=false
 gui.Parent=player:WaitForChild("PlayerGui")
-
 local function corner(obj,r)
 	local c=Instance.new("UICorner")
 	c.CornerRadius=UDim.new(0,r)
 	c.Parent=obj
 end
-
 local function button(parent,text,pos,size)
 	local b=Instance.new("TextButton")
 	b.Size=size
@@ -41,17 +35,14 @@ local function button(parent,text,pos,size)
 	corner(b,9)
 	return b
 end
-
 local open=button(
 	gui,
 	"VANH",
 	UDim2.new(0,20,.5,-21),
 	UDim2.new(0,85,0,42)
 )
-
 open.BackgroundColor3=Color3.fromRGB(25,25,30)
 open.TextSize=18
-
 local frame=Instance.new("Frame")
 frame.Size=UDim2.new(0,330,0,410)
 frame.Position=UDim2.new(.5,-165,.5,-205)
@@ -59,13 +50,11 @@ frame.BackgroundColor3=Color3.fromRGB(20,20,25)
 frame.Visible=false
 frame.Parent=gui
 corner(frame,15)
-
 local top=Instance.new("Frame")
 top.Size=UDim2.new(1,0,0,55)
 top.BackgroundColor3=Color3.fromRGB(28,28,34)
 top.Parent=frame
 corner(top,15)
-
 local title=Instance.new("TextLabel")
 title.Size=UDim2.new(1,-100,1,0)
 title.Position=UDim2.new(0,18,0,0)
@@ -76,63 +65,52 @@ title.TextSize=22
 title.Font=Enum.Font.GothamBold
 title.TextXAlignment=Enum.TextXAlignment.Left
 title.Parent=top
-
 local close=button(
 	top,
 	"X",
 	UDim2.new(1,-45,0,10),
 	UDim2.new(0,35,0,35)
 )
-
 close.BackgroundColor3=Color3.fromRGB(180,55,55)
-
 local settings=button(
 	frame,
 	"SETTINGS",
 	UDim2.new(0,15,0,70),
 	UDim2.new(0,95,0,38)
 )
-
 local aim=button(
 	frame,
 	"AIM",
 	UDim2.new(0,117,0,70),
 	UDim2.new(0,95,0,38)
 )
-
 local support=button(
 	frame,
 	"SUPPORT",
 	UDim2.new(0,219,0,70),
 	UDim2.new(0,95,0,38)
 )
-
 aim.BackgroundColor3=Color3.fromRGB(35,35,42)
 aim.TextColor3=Color3.fromRGB(180,180,190)
-
 support.BackgroundColor3=Color3.fromRGB(35,35,42)
 support.TextColor3=Color3.fromRGB(180,180,190)
-
 local settingsPage=Instance.new("Frame")
 settingsPage.Size=UDim2.new(1,-40,1,-125)
 settingsPage.Position=UDim2.new(0,20,0,120)
 settingsPage.BackgroundTransparency=1
 settingsPage.Parent=frame
-
 local aimPage=Instance.new("Frame")
 aimPage.Size=UDim2.new(1,-40,1,-125)
 aimPage.Position=UDim2.new(0,20,0,120)
 aimPage.BackgroundTransparency=1
 aimPage.Visible=false
 aimPage.Parent=frame
-
 local supportPage=Instance.new("Frame")
 supportPage.Size=UDim2.new(1,-40,1,-125)
 supportPage.Position=UDim2.new(0,20,0,120)
 supportPage.BackgroundTransparency=1
 supportPage.Visible=false
 supportPage.Parent=frame
-
 local function settingButton(text,y)
 	return button(
 		settingsPage,
@@ -141,7 +119,6 @@ local function settingButton(text,y)
 		UDim2.new(0,100,0,38)
 	)
 end
-
 local function settingBox(value,y)
 	local b=Instance.new("TextBox")
 	b.Size=UDim2.new(0,165,0,38)
@@ -156,30 +133,22 @@ local function settingBox(value,y)
 	corner(b,9)
 	return b
 end
-
 local flyButton=settingButton("FLY OFF",0)
 local flyBox=settingBox(flySpeed,0)
-
 local speedButton=settingButton("SPEED OFF",55)
 local speedBox=settingBox(walkSpeed,55)
-
 local jumpButton=settingButton("JUMP OFF",110)
 local jumpBox=settingBox(jumpPower,110)
-
 local espButton=settingButton("ESP OFF",165)
-
 local noclipButton=settingButton("NOCLIP OFF",220)
-
 local espFolder=Instance.new("Folder")
 espFolder.Name="VanhESP"
 espFolder.Parent=gui
-
 local function clearESP()
 	for _,v in ipairs(espFolder:GetChildren()) do
 		v:Destroy()
 	end
 end
-
 local function updateESP()
 	clearESP()
 	if not espOn then
@@ -224,7 +193,6 @@ local function updateESP()
 		end
 	end
 end
-
 local aimTitle=Instance.new("TextLabel")
 aimTitle.Size=UDim2.new(1,0,0,30)
 aimTitle.Position=UDim2.new(0,0,0,5)
@@ -234,7 +202,6 @@ aimTitle.TextColor3=Color3.fromRGB(150,150,160)
 aimTitle.TextSize=16
 aimTitle.Font=Enum.Font.GothamBold
 aimTitle.Parent=aimPage
-
 local aimStatus=Instance.new("TextLabel")
 aimStatus.Size=UDim2.new(1,0,0,100)
 aimStatus.Position=UDim2.new(0,0,0,45)
@@ -245,14 +212,12 @@ aimStatus.TextSize=12
 aimStatus.Font=Enum.Font.Gotham
 aimStatus.TextYAlignment=Enum.TextYAlignment.Top
 aimStatus.Parent=aimPage
-
 local aimButton=button(
 	aimPage,
 	"AIM OFF",
 	UDim2.new(0,0,0,155),
 	UDim2.new(0,290,0,40)
 )
-
 local supportTitle=Instance.new("TextLabel")
 supportTitle.Size=UDim2.new(1,0,0,35)
 supportTitle.Position=UDim2.new(0,0,0,5)
@@ -262,7 +227,6 @@ supportTitle.TextColor3=Color3.fromRGB(255,255,255)
 supportTitle.TextSize=18
 supportTitle.Font=Enum.Font.GothamBold
 supportTitle.Parent=supportPage
-
 local discordTitle=Instance.new("TextLabel")
 discordTitle.Size=UDim2.new(1,0,0,30)
 discordTitle.Position=UDim2.new(0,0,0,50)
@@ -272,7 +236,6 @@ discordTitle.TextColor3=Color3.fromRGB(180,180,190)
 discordTitle.TextSize=14
 discordTitle.Font=Enum.Font.GothamBold
 discordTitle.Parent=supportPage
-
 local discordBox=Instance.new("TextBox")
 discordBox.Size=UDim2.new(1,0,0,40)
 discordBox.Position=UDim2.new(0,0,0,90)
@@ -285,14 +248,12 @@ discordBox.ClearTextOnFocus=false
 discordBox.TextEditable=false
 discordBox.Parent=supportPage
 corner(discordBox,9)
-
 local copyDiscord=button(
 	supportPage,
 	"COPY DISCORD LINK",
 	UDim2.new(0,0,0,145),
 	UDim2.new(1,0,0,40)
 )
-
 copyDiscord.MouseButton1Click:Connect(function()
 	local link="https://discord.gg/bE5uGYNvjF"
 	if setclipboard then
@@ -306,7 +267,6 @@ copyDiscord.MouseButton1Click:Connect(function()
 		discordBox:CaptureFocus()
 	end
 end)
-
 local confirm=Instance.new("Frame")
 confirm.Size=UDim2.new(0,280,0,145)
 confirm.Position=UDim2.new(.5,-140,.5,-72)
@@ -315,7 +275,6 @@ confirm.Visible=false
 confirm.ZIndex=10
 confirm.Parent=gui
 corner(confirm,13)
-
 local question=Instance.new("TextLabel")
 question.Size=UDim2.new(1,-20,0,65)
 question.Position=UDim2.new(0,10,0,10)
@@ -327,26 +286,21 @@ question.Font=Enum.Font.GothamBold
 question.TextWrapped=true
 question.ZIndex=11
 question.Parent=confirm
-
 local yes=button(
 	confirm,
 	"CÓ",
 	UDim2.new(0,25,0,90),
 	UDim2.new(0,105,0,38)
 )
-
 yes.BackgroundColor3=Color3.fromRGB(180,55,55)
 yes.ZIndex=11
-
 local no=button(
 	confirm,
 	"KHÔNG",
 	UDim2.new(0,150,0,90),
 	UDim2.new(0,105,0,38)
 )
-
 no.ZIndex=11
-
 local function setState(b,onText,offText,state)
 	b.Text=state and onText or offText
 	b.BackgroundColor3=
@@ -354,7 +308,6 @@ local function setState(b,onText,offText,state)
 		and Color3.fromRGB(45,170,90)
 		or Color3.fromRGB(90,90,100)
 end
-
 local function nearestPlayer()
 	local char=player.Character
 	local root=char and char:FindFirstChild("HumanoidRootPart")
@@ -379,11 +332,9 @@ local function nearestPlayer()
 	end
 	return target
 end
-
 open.MouseButton1Click:Connect(function()
 	frame.Visible=not frame.Visible
 end)
-
 settings.MouseButton1Click:Connect(function()
 	settingsPage.Visible=true
 	aimPage.Visible=false
@@ -392,7 +343,6 @@ settings.MouseButton1Click:Connect(function()
 	aim.BackgroundColor3=Color3.fromRGB(35,35,42)
 	support.BackgroundColor3=Color3.fromRGB(35,35,42)
 end)
-
 aim.MouseButton1Click:Connect(function()
 	settingsPage.Visible=false
 	aimPage.Visible=true
@@ -401,7 +351,6 @@ aim.MouseButton1Click:Connect(function()
 	aim.BackgroundColor3=Color3.fromRGB(55,55,65)
 	support.BackgroundColor3=Color3.fromRGB(35,35,42)
 end)
-
 support.MouseButton1Click:Connect(function()
 	settingsPage.Visible=false
 	aimPage.Visible=false
@@ -410,15 +359,12 @@ support.MouseButton1Click:Connect(function()
 	aim.BackgroundColor3=Color3.fromRGB(35,35,42)
 	support.BackgroundColor3=Color3.fromRGB(55,55,65)
 end)
-
 close.MouseButton1Click:Connect(function()
 	confirm.Visible=true
 end)
-
 no.MouseButton1Click:Connect(function()
 	confirm.Visible=false
 end)
-
 yes.MouseButton1Click:Connect(function()
 	flying=false
 	speedOn=false
@@ -451,7 +397,6 @@ yes.MouseButton1Click:Connect(function()
 	clearESP()
 	gui:Destroy()
 end)
-
 flyButton.MouseButton1Click:Connect(function()
 	flying=not flying
 	setState(
@@ -469,7 +414,6 @@ flyButton.MouseButton1Click:Connect(function()
 		end
 	end
 end)
-
 speedButton.MouseButton1Click:Connect(function()
 	speedOn=not speedOn
 	local char=player.Character
@@ -518,7 +462,6 @@ speedButton.MouseButton1Click:Connect(function()
 		end
 	end
 end)
-
 jumpButton.MouseButton1Click:Connect(function()
 	jumpOn=not jumpOn
 	setState(
@@ -534,7 +477,6 @@ jumpButton.MouseButton1Click:Connect(function()
 		humanoid.JumpPower=jumpOn and jumpPower or 50
 	end
 end)
-
 espButton.MouseButton1Click:Connect(function()
 	espOn=not espOn
 	setState(
@@ -549,7 +491,6 @@ espButton.MouseButton1Click:Connect(function()
 		clearESP()
 	end
 end)
-
 noclipButton.MouseButton1Click:Connect(function()
 	noclipOn=not noclipOn
 	setState(
@@ -559,7 +500,6 @@ noclipButton.MouseButton1Click:Connect(function()
 		noclipOn
 	)
 end)
-
 aimButton.MouseButton1Click:Connect(function()
 	aimOn=not aimOn
 	setState(
@@ -572,7 +512,6 @@ aimButton.MouseButton1Click:Connect(function()
 		aimStatus.Text="Status: OFF\nTarget: NONE"
 	end
 end)
-
 flyBox.FocusLost:Connect(function()
 	local value=tonumber(flyBox.Text)
 	if value and value>=1 then
@@ -581,7 +520,6 @@ flyBox.FocusLost:Connect(function()
 		flyBox.Text=tostring(flySpeed)
 	end
 end)
-
 speedBox.FocusLost:Connect(function()
 	local value=tonumber(speedBox.Text)
 	if value and value>=0 then
@@ -597,7 +535,6 @@ speedBox.FocusLost:Connect(function()
 		speedBox.Text=tostring(walkSpeed)
 	end
 end)
-
 jumpBox.FocusLost:Connect(function()
 	local value=tonumber(jumpBox.Text)
 	if value and value>=0 then
@@ -614,11 +551,9 @@ jumpBox.FocusLost:Connect(function()
 		jumpBox.Text=tostring(jumpPower)
 	end
 end)
-
 local dragging=false
 local dragStart
 local startPos
-
 top.InputBegan:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		dragging=true
@@ -626,13 +561,11 @@ top.InputBegan:Connect(function(input)
 		startPos=frame.Position
 	end
 end)
-
 top.InputEnded:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		dragging=false
 	end
 end)
-
 uis.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
 		local delta=input.Position-dragStart
@@ -644,11 +577,9 @@ uis.InputChanged:Connect(function(input)
 		)
 	end
 end)
-
 local openDragging=false
 local openDragStart
 local openStartPos
-
 open.InputBegan:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		openDragging=true
@@ -656,13 +587,11 @@ open.InputBegan:Connect(function(input)
 		openStartPos=open.Position
 	end
 end)
-
 open.InputEnded:Connect(function(input)
 	if input.UserInputType==Enum.UserInputType.MouseButton1 then
 		openDragging=false
 	end
 end)
-
 uis.InputChanged:Connect(function(input)
 	if openDragging and input.UserInputType==Enum.UserInputType.MouseMovement then
 		local delta=input.Position-openDragStart
@@ -674,7 +603,6 @@ uis.InputChanged:Connect(function(input)
 		)
 	end
 end)
-
 player.CharacterAdded:Connect(function(char)
 	local humanoid=char:WaitForChild("Humanoid")
 	if speedOn then
@@ -685,7 +613,6 @@ player.CharacterAdded:Connect(function(char)
 		humanoid.JumpPower=jumpPower
 	end
 end)
-
 players.PlayerAdded:Connect(function(p)
 	p.CharacterAdded:Connect(function()
 		task.wait(.3)
@@ -694,13 +621,11 @@ players.PlayerAdded:Connect(function(p)
 		end
 	end)
 end)
-
 players.PlayerRemoving:Connect(function()
 	if espOn then
 		updateESP()
 	end
 end)
-
 connection=run.RenderStepped:Connect(function()
 	local char=player.Character
 	local hrp=char and char:FindFirstChild("HumanoidRootPart")
@@ -763,7 +688,6 @@ connection=run.RenderStepped:Connect(function()
 		end
 	end
 end)
-
 task.spawn(function()
 	while gui.Parent do
 		if espOn then
@@ -772,7 +696,6 @@ task.spawn(function()
 		task.wait(.35)
 	end
 end)
-
 task.spawn(function()
 	while gui.Parent do
 		local char=player.Character
