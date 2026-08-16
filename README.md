@@ -7,11 +7,14 @@ local flying=false
 local speedOn=false
 local jumpOn=false
 local espOn=false
+local noclipOn=false
 local aimOn=false
+
 local flySpeed=60
 local walkSpeed=60
 local jumpPower=50
 local aimRange=100
+
 local connection
 
 local gui=Instance.new("ScreenGui")
@@ -39,7 +42,13 @@ local function button(parent,text,pos,size)
 	return b
 end
 
-local open=button(gui,"VANH",UDim2.new(0,20,.5,-21),UDim2.new(0,85,0,42))
+local open=button(
+	gui,
+	"VANH",
+	UDim2.new(0,20,.5,-21),
+	UDim2.new(0,85,0,42)
+)
+
 open.BackgroundColor3=Color3.fromRGB(25,25,30)
 open.TextSize=18
 
@@ -68,14 +77,41 @@ title.Font=Enum.Font.GothamBold
 title.TextXAlignment=Enum.TextXAlignment.Left
 title.Parent=top
 
-local close=button(top,"X",UDim2.new(1,-45,0,10),UDim2.new(0,35,0,35))
+local close=button(
+	top,
+	"X",
+	UDim2.new(1,-45,0,10),
+	UDim2.new(0,35,0,35)
+)
+
 close.BackgroundColor3=Color3.fromRGB(180,55,55)
 
-local settings=button(frame,"SETTINGS",UDim2.new(0,20,0,70),UDim2.new(0,140,0,38))
+local settings=button(
+	frame,
+	"SETTINGS",
+	UDim2.new(0,15,0,70),
+	UDim2.new(0,95,0,38)
+)
 
-local aim=button(frame,"AIM",UDim2.new(0,170,0,70),UDim2.new(0,140,0,38))
+local aim=button(
+	frame,
+	"AIM",
+	UDim2.new(0,117,0,70),
+	UDim2.new(0,95,0,38)
+)
+
+local support=button(
+	frame,
+	"SUPPORT",
+	UDim2.new(0,219,0,70),
+	UDim2.new(0,95,0,38)
+)
+
 aim.BackgroundColor3=Color3.fromRGB(35,35,42)
 aim.TextColor3=Color3.fromRGB(180,180,190)
+
+support.BackgroundColor3=Color3.fromRGB(35,35,42)
+support.TextColor3=Color3.fromRGB(180,180,190)
 
 local settingsPage=Instance.new("Frame")
 settingsPage.Size=UDim2.new(1,-40,1,-125)
@@ -90,8 +126,20 @@ aimPage.BackgroundTransparency=1
 aimPage.Visible=false
 aimPage.Parent=frame
 
+local supportPage=Instance.new("Frame")
+supportPage.Size=UDim2.new(1,-40,1,-125)
+supportPage.Position=UDim2.new(0,20,0,120)
+supportPage.BackgroundTransparency=1
+supportPage.Visible=false
+supportPage.Parent=frame
+
 local function settingButton(text,y)
-	return button(settingsPage,text,UDim2.new(0,0,0,y),UDim2.new(0,100,0,38))
+	return button(
+		settingsPage,
+		text,
+		UDim2.new(0,0,0,y),
+		UDim2.new(0,100,0,38)
+	)
 end
 
 local function settingBox(value,y)
@@ -111,11 +159,16 @@ end
 
 local flyButton=settingButton("FLY OFF",0)
 local flyBox=settingBox(flySpeed,0)
+
 local speedButton=settingButton("SPEED OFF",55)
 local speedBox=settingBox(walkSpeed,55)
+
 local jumpButton=settingButton("JUMP OFF",110)
 local jumpBox=settingBox(jumpPower,110)
+
 local espButton=settingButton("ESP OFF",165)
+
+local noclipButton=settingButton("NOCLIP OFF",220)
 
 local espFolder=Instance.new("Folder")
 espFolder.Name="VanhESP"
@@ -129,7 +182,9 @@ end
 
 local function updateESP()
 	clearESP()
-	if not espOn then return end
+	if not espOn then
+		return
+	end
 	for _,p in ipairs(players:GetPlayers()) do
 		if p~=player and p.Character then
 			local char=p.Character
@@ -155,7 +210,14 @@ local function updateESP()
 					t.TextStrokeTransparency=0
 					t.TextSize=14
 					t.Font=Enum.Font.GothamBold
-					t.Text=p.DisplayName.." ["..p.Name.."]\nHP: "..math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)
+					t.Text=
+						p.DisplayName..
+						" ["..
+						p.Name..
+						"]\nHP: "..
+						math.floor(hum.Health)..
+						"/"..
+						math.floor(hum.MaxHealth)
 					t.Parent=bb
 				end
 			end
@@ -184,7 +246,66 @@ aimStatus.Font=Enum.Font.Gotham
 aimStatus.TextYAlignment=Enum.TextYAlignment.Top
 aimStatus.Parent=aimPage
 
-local aimButton=button(aimPage,"AIM OFF",UDim2.new(0,0,0,155),UDim2.new(0,290,0,40))
+local aimButton=button(
+	aimPage,
+	"AIM OFF",
+	UDim2.new(0,0,0,155),
+	UDim2.new(0,290,0,40)
+)
+
+local supportTitle=Instance.new("TextLabel")
+supportTitle.Size=UDim2.new(1,0,0,35)
+supportTitle.Position=UDim2.new(0,0,0,5)
+supportTitle.BackgroundTransparency=1
+supportTitle.Text="VANH HUB • SUPPORT"
+supportTitle.TextColor3=Color3.fromRGB(255,255,255)
+supportTitle.TextSize=18
+supportTitle.Font=Enum.Font.GothamBold
+supportTitle.Parent=supportPage
+
+local discordTitle=Instance.new("TextLabel")
+discordTitle.Size=UDim2.new(1,0,0,30)
+discordTitle.Position=UDim2.new(0,0,0,50)
+discordTitle.BackgroundTransparency=1
+discordTitle.Text="DISCORD SUPPORT"
+discordTitle.TextColor3=Color3.fromRGB(180,180,190)
+discordTitle.TextSize=14
+discordTitle.Font=Enum.Font.GothamBold
+discordTitle.Parent=supportPage
+
+local discordBox=Instance.new("TextBox")
+discordBox.Size=UDim2.new(1,0,0,40)
+discordBox.Position=UDim2.new(0,0,0,90)
+discordBox.BackgroundColor3=Color3.fromRGB(35,35,42)
+discordBox.Text="https://discord.gg/bE5uGYNvjF"
+discordBox.TextColor3=Color3.fromRGB(255,255,255)
+discordBox.TextSize=13
+discordBox.Font=Enum.Font.Gotham
+discordBox.ClearTextOnFocus=false
+discordBox.TextEditable=false
+discordBox.Parent=supportPage
+corner(discordBox,9)
+
+local copyDiscord=button(
+	supportPage,
+	"COPY DISCORD LINK",
+	UDim2.new(0,0,0,145),
+	UDim2.new(1,0,0,40)
+)
+
+copyDiscord.MouseButton1Click:Connect(function()
+	local link="https://discord.gg/bE5uGYNvjF"
+	if setclipboard then
+		setclipboard(link)
+		copyDiscord.Text="COPIED!"
+		task.wait(1)
+		if copyDiscord.Parent then
+			copyDiscord.Text="COPY DISCORD LINK"
+		end
+	else
+		discordBox:CaptureFocus()
+	end
+end)
 
 local confirm=Instance.new("Frame")
 confirm.Size=UDim2.new(0,280,0,145)
@@ -207,22 +328,39 @@ question.TextWrapped=true
 question.ZIndex=11
 question.Parent=confirm
 
-local yes=button(confirm,"CÓ",UDim2.new(0,25,0,90),UDim2.new(0,105,0,38))
+local yes=button(
+	confirm,
+	"CÓ",
+	UDim2.new(0,25,0,90),
+	UDim2.new(0,105,0,38)
+)
+
 yes.BackgroundColor3=Color3.fromRGB(180,55,55)
 yes.ZIndex=11
 
-local no=button(confirm,"KHÔNG",UDim2.new(0,150,0,90),UDim2.new(0,105,0,38))
+local no=button(
+	confirm,
+	"KHÔNG",
+	UDim2.new(0,150,0,90),
+	UDim2.new(0,105,0,38)
+)
+
 no.ZIndex=11
 
 local function setState(b,onText,offText,state)
 	b.Text=state and onText or offText
-	b.BackgroundColor3=state and Color3.fromRGB(45,170,90) or Color3.fromRGB(90,90,100)
+	b.BackgroundColor3=
+		state
+		and Color3.fromRGB(45,170,90)
+		or Color3.fromRGB(90,90,100)
 end
 
 local function nearestPlayer()
 	local char=player.Character
 	local root=char and char:FindFirstChild("HumanoidRootPart")
-	if not root then return nil end
+	if not root then
+		return nil
+	end
 	local target=nil
 	local distance=aimRange
 	for _,p in ipairs(players:GetPlayers()) do
@@ -249,15 +387,28 @@ end)
 settings.MouseButton1Click:Connect(function()
 	settingsPage.Visible=true
 	aimPage.Visible=false
+	supportPage.Visible=false
 	settings.BackgroundColor3=Color3.fromRGB(55,55,65)
 	aim.BackgroundColor3=Color3.fromRGB(35,35,42)
+	support.BackgroundColor3=Color3.fromRGB(35,35,42)
 end)
 
 aim.MouseButton1Click:Connect(function()
 	settingsPage.Visible=false
 	aimPage.Visible=true
+	supportPage.Visible=false
 	settings.BackgroundColor3=Color3.fromRGB(35,35,42)
 	aim.BackgroundColor3=Color3.fromRGB(55,55,65)
+	support.BackgroundColor3=Color3.fromRGB(35,35,42)
+end)
+
+support.MouseButton1Click:Connect(function()
+	settingsPage.Visible=false
+	aimPage.Visible=false
+	supportPage.Visible=true
+	settings.BackgroundColor3=Color3.fromRGB(35,35,42)
+	aim.BackgroundColor3=Color3.fromRGB(35,35,42)
+	support.BackgroundColor3=Color3.fromRGB(55,55,65)
 end)
 
 close.MouseButton1Click:Connect(function()
@@ -273,15 +424,20 @@ yes.MouseButton1Click:Connect(function()
 	speedOn=false
 	jumpOn=false
 	espOn=false
+	noclipOn=false
 	aimOn=false
 	local char=player.Character
 	local root=char and char:FindFirstChild("HumanoidRootPart")
 	local hum=char and char:FindFirstChildOfClass("Humanoid")
 	if root then
 		local bv=root:FindFirstChild("FlyVelocity")
-		if bv then bv:Destroy() end
+		if bv then
+			bv:Destroy()
+		end
 		local sv=root:FindFirstChild("SpeedVel")
-		if sv then sv:Destroy() end
+		if sv then
+			sv:Destroy()
+		end
 	end
 	if hum then
 		hum.WalkSpeed=16
@@ -298,12 +454,19 @@ end)
 
 flyButton.MouseButton1Click:Connect(function()
 	flying=not flying
-	setState(flyButton,"FLY ON","FLY OFF",flying)
+	setState(
+		flyButton,
+		"FLY ON",
+		"FLY OFF",
+		flying
+	)
 	if not flying then
 		local char=player.Character
 		local root=char and char:FindFirstChild("HumanoidRootPart")
 		local bv=root and root:FindFirstChild("FlyVelocity")
-		if bv then bv:Destroy() end
+		if bv then
+			bv:Destroy()
+		end
 	end
 end)
 
@@ -349,14 +512,21 @@ speedButton.MouseButton1Click:Connect(function()
 		end
 		if hrp then
 			local bv=hrp:FindFirstChild("SpeedVel")
-			if bv then bv:Destroy() end
+			if bv then
+				bv:Destroy()
+			end
 		end
 	end
 end)
 
 jumpButton.MouseButton1Click:Connect(function()
 	jumpOn=not jumpOn
-	setState(jumpButton,"JUMP ON","JUMP OFF",jumpOn)
+	setState(
+		jumpButton,
+		"JUMP ON",
+		"JUMP OFF",
+		jumpOn
+	)
 	local char=player.Character
 	local humanoid=char and char:FindFirstChildOfClass("Humanoid")
 	if humanoid then
@@ -367,7 +537,12 @@ end)
 
 espButton.MouseButton1Click:Connect(function()
 	espOn=not espOn
-	setState(espButton,"ESP ON","ESP OFF",espOn)
+	setState(
+		espButton,
+		"ESP ON",
+		"ESP OFF",
+		espOn
+	)
 	if espOn then
 		updateESP()
 	else
@@ -375,9 +550,24 @@ espButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+noclipButton.MouseButton1Click:Connect(function()
+	noclipOn=not noclipOn
+	setState(
+		noclipButton,
+		"NOCLIP ON",
+		"NOCLIP OFF",
+		noclipOn
+	)
+end)
+
 aimButton.MouseButton1Click:Connect(function()
 	aimOn=not aimOn
-	setState(aimButton,"AIM ON","AIM OFF",aimOn)
+	setState(
+		aimButton,
+		"AIM ON",
+		"AIM OFF",
+		aimOn
+	)
 	if not aimOn then
 		aimStatus.Text="Status: OFF\nTarget: NONE"
 	end
@@ -524,21 +714,50 @@ connection=run.RenderStepped:Connect(function()
 		end
 		local cam=workspace.CurrentCamera
 		local move=Vector3.zero
-		if uis:IsKeyDown(Enum.KeyCode.W) then move+=cam.CFrame.LookVector end
-		if uis:IsKeyDown(Enum.KeyCode.S) then move-=cam.CFrame.LookVector end
-		if uis:IsKeyDown(Enum.KeyCode.A) then move-=cam.CFrame.RightVector end
-		if uis:IsKeyDown(Enum.KeyCode.D) then move+=cam.CFrame.RightVector end
-		if uis:IsKeyDown(Enum.KeyCode.Space) then move+=Vector3.new(0,1,0) end
-		if uis:IsKeyDown(Enum.KeyCode.LeftControl) then move-=Vector3.new(0,1,0) end
-		bv.Velocity=move.Magnitude>0 and move.Unit*flySpeed or Vector3.zero
+		if uis:IsKeyDown(Enum.KeyCode.W) then
+			move+=cam.CFrame.LookVector
+		end
+		if uis:IsKeyDown(Enum.KeyCode.S) then
+			move-=cam.CFrame.LookVector
+		end
+		if uis:IsKeyDown(Enum.KeyCode.A) then
+			move-=cam.CFrame.RightVector
+		end
+		if uis:IsKeyDown(Enum.KeyCode.D) then
+			move+=cam.CFrame.RightVector
+		end
+		if uis:IsKeyDown(Enum.KeyCode.Space) then
+			move+=Vector3.new(0,1,0)
+		end
+		if uis:IsKeyDown(Enum.KeyCode.LeftControl) then
+			move-=Vector3.new(0,1,0)
+		end
+		bv.Velocity=
+			move.Magnitude>0
+			and move.Unit*flySpeed
+			or Vector3.zero
+	end
+	if noclipOn and char then
+		for _,v in ipairs(char:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide=false
+			end
+		end
 	end
 	if aimOn then
 		local target=nearestPlayer()
 		local cam=workspace.CurrentCamera
-		local targetRoot=target and target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+		local targetRoot=
+			target
+			and target.Character
+			and target.Character:FindFirstChild("HumanoidRootPart")
 		if targetRoot and cam then
-			cam.CFrame=CFrame.lookAt(cam.CFrame.Position,targetRoot.Position)
-			aimStatus.Text="Status: ON\nTarget: "..target.Name
+			cam.CFrame=CFrame.lookAt(
+				cam.CFrame.Position,
+				targetRoot.Position
+			)
+			aimStatus.Text=
+				"Status: ON\nTarget: "..target.Name
 		else
 			aimStatus.Text="Status: ON\nTarget: NONE"
 		end
